@@ -78,23 +78,31 @@ class FungalDataLoader:
     def create_kfold_splits(self, n_splits=5, run_only=None):
         kfold = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=self.seed)
 
-        self.kfold_splits = []
         for fold, (train_idx, val_idx) in enumerate(
             kfold.split(self.slide_dataset, self.slide_labels)
         ):
             if run_only and fold not in run_only:
                 continue
 
-            x_train, x_val = (
+            self.x_train_slides, self.x_val_slides = (
                 self.slide_dataset[train_idx],
                 self.slide_dataset[val_idx],
             )
-            y_train, y_val = (
+            self.y_train_slides, self.y_val_slides = (
                 self.slide_labels[train_idx],
                 self.slide_labels[val_idx],
             )
 
-            self.kfold_splits.append((x_train, x_val, y_train, y_val))
+            self.split_info()
+            yield self.x_train_slides, self.y_train_slides, self.x_val_slides, self.y_val_slides
+
+    def split_info(self):
+        slides_split_verbose = (
+            lambda x: f"{x.shape[0]} (F:{int(np.sum(x))}, NF:{int(len(x) - np.sum(x))})"
+        )
+        print("Training slides:", slides_split_verbose(self.y_train_slides))
+        print("Validation slides:", slides_split_verbose(self.y_val_slides))
+        print("Test slides:", slides_split_verbose(self.y_test_slides))
 
     def save_slides(self, data_dir, sub_dir, label, dataset, save_ext="png"):
         sub_dir = os.path.join(data_dir, sub_dir)
