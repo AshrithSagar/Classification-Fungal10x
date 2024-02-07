@@ -1,15 +1,13 @@
-""" Models and Model utils """
+"""
+EfficientNetB0 model
+"""
+
 import os
-import matplotlib.pyplot as plt
-import numpy as np
+import datetime
 import pandas as pd
-from matplotlib.pyplot import imshow
-from PIL import Image
 import tensorflow as tf
-from tensorflow.keras import datasets, layers, models, callbacks
-
-
-# ========== Model utils ==========
+from tensorflow.keras import layers, models, callbacks
+from tensorflow.keras.applications import EfficientNetB0
 
 
 def freeze_layers(model, freeze, verbose=True):
@@ -32,25 +30,20 @@ def freeze_layers(model, freeze, verbose=True):
     return model
 
 
-# ========== Models ==========
-
-
 def get_EfficientNetB0(args):
-    from tensorflow.keras.applications import EfficientNetB0
-
     model_checkpoint_path = os.path.join(
         args["exp_dir"], "efficientnet-finetune-model.h5"
     )
     csv_logger_path = os.path.join(args["exp_dir"], "csv_logger.csv")
     log_dir = os.path.join(
-        exp_dir, "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        args["exp_dir"], "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     )
 
     base_model = EfficientNetB0(
         input_shape=(224, 224, 3), include_top=True, weights="imagenet"
     )
 
-    base_model = freeze_layers(base_model, model_params["freeze_ratio"])
+    base_model = freeze_layers(base_model, args["model_params"]["freeze_ratio"])
 
     model = models.Sequential()
     model.add(layers.Rescaling(1.0 / 255))
@@ -63,7 +56,9 @@ def get_EfficientNetB0(args):
 
     model.compile(
         loss="binary_crossentropy",
-        optimizer=tf.optimizers.Adam(learning_rate=model_params["learning_rate"]),
+        optimizer=tf.optimizers.Adam(
+            learning_rate=args["model_params"]["learning_rate"]
+        ),
         metrics=["accuracy"],
     )
 
@@ -92,7 +87,7 @@ def get_EfficientNetB0(args):
             monitor="val_loss",
             mode="min",
             verbose=1,
-            patience=model_params["patience"],
+            patience=args["model_params"]["patience"],
         ),
     ]
 
@@ -109,7 +104,7 @@ def get_EfficientNetB0(args):
             if not csv_data.empty:
                 epochs_done = len(csv_data["epoch"])
 
-    remaining_epochs = max(0, max_epochs - epochs_done)
+    remaining_epochs = max(0, args["max_epochs"] - epochs_done)
     print(f"{epochs_done} Epochs done; Remaining epochs: {remaining_epochs}")
 
     return model, callbacks_list, epochs_done
