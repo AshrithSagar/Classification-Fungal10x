@@ -214,6 +214,76 @@ class FungalDataLoader:
             self.x_test_annot,
         )
 
+        self.annot_patches_labels, _ = get_annot(self.annot_dataset)
+
+    def verify_annotations(self):
+        nonfungal_indices = [
+            index for index, label in enumerate(self.slide_labels) if label == 0
+        ]
+
+        annot_slides_check = tf.reduce_any(self.annot_patches_labels == 1, 1)
+        wrong_labels_slide_annot = len(
+            set(np.where(annot_slides_check == True)[0]).intersection(nonfungal_indices)
+        )
+        wrong_labels_slide_annot_indices = set(
+            np.where(annot_slides_check == True)[0]
+        ).intersection(nonfungal_indices)
+
+        print(f"Annot True: {np.count_nonzero(annot_slides_check == True)};")
+        print(f"Should be {np.count_nonzero(self.slide_labels == True)})")
+
+        print(f"Annot False: {np.count_nonzero(annot_slides_check == False)};")
+        print(f"Should be {np.count_nonzero(self.slide_labels == False)})")
+
+        print(f"Wrongly labelled slide annotations: {wrong_labels_slide_annot}")
+
+        print("Wrongly labelled slide annotations indices:")
+        print(wrong_labels_slide_annot_indices, end=", ")
+
+    def filter_patch_annotations(self):
+        def filter_patch_annot(y_slides, x_patch_labels):
+            a = tf.cast(y_slides, dtype="float32")
+            b = tf.expand_dims(a, 1)
+            c = tf.expand_dims(tf.ones(x_patch_labels.shape[-1]), 0)
+            d = tf.linalg.matmul(b, c)
+            e = tf.cast(d, dtype="bool")
+
+            f = x_patch_labels == -1
+            g = tf.math.logical_xor(e, f)
+            return g, d
+
+        self.x_train_patches_filtermask, self.y_train_patches = filter_patch_annot(
+            self.y_train_slides, self.x_train_patch_labels
+        )
+        self.x_val_patches_filtermask, self.y_val_patches = filter_patch_annot(
+            self.y_val_slides, self.x_val_patch_labels
+        )
+        self.x_test_patches_filtermask, self.y_test_patches = filter_patch_annot(
+            self.y_test_slides, self.x_test_patch_labels
+        )
+
+    def patches_info(self):
+        def patches_verbose(check_bool, patches_filtermask, patch_labels):
+            mask = patches_filtermask == check_bool
+            total = tf.math.count_nonzero(mask).numpy()
+            fungal = tf.math.count_nonzero(
+                tf.math.logical_and(mask, (patch_labels == 1))
+            ).numpy()
+            nonfungal = tf.math.count_nonzero(
+                tf.math.logical_and(mask, (patch_labels == -1))
+            ).numpy()
+            state = "considered" if check_bool else "discarded"
+            return f"patches {state}: {total}; (F:{fungal}, NF:{nonfungal})"
+
+        dataset_info = [
+            ("Train", self.x_train_patches_filtermask, self.x_train_patch_labels),
+            ("Validation", self.x_val_patches_filtermask, self.x_val_patch_labels),
+            ("Test", self.x_test_patches_filtermask, self.x_test_patch_labels),
+        ]
+        for name, filtermask, patch_labels in dataset_info:
+            print(name, patches_verbose(True, filtermask, patch_labels))
+            print(name, patches_verbose(False, filtermask, patch_labels))
+
     def save_patches(self, data_dir, sub_dir, label, patches, save_ext="png"):
         sub_dir = os.path.join(data_dir, sub_dir)
         os.makedirs(sub_dir, exist_ok=True)
