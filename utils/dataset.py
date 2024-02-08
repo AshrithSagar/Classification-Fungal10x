@@ -150,15 +150,17 @@ class FungalDataLoader:
     def downsample_slides(self, size=None, factor=None, preserve_aspect_ratio=True):
         def downsample(slides):
             return tf.image.resize(
-                slides, downsample_size, preserve_aspect_ratio=preserve_aspect_ratio
+                slides,
+                self.downsample_size,
+                preserve_aspect_ratio=preserve_aspect_ratio,
             )
 
-        downsample_size = None
+        self.downsample_size = None
         if factor:
-            downsample_size = tuple([int(x / factor) for x in self.slide_dims])
+            self.downsample_size = tuple([int(x / factor) for x in self.slide_dims])
         if size:
-            downsample_size = size
-        if not downsample_size:
+            self.downsample_size = size
+        if not self.downsample_size:
             raise ValueError("Either size or downsample factor must be provided.")
 
         self.x_train_slides = downsample(self.x_train_slides)
@@ -167,7 +169,7 @@ class FungalDataLoader:
         self.x_train_annot = downsample(self.x_train_annot)
         self.x_val_annot = downsample(self.x_val_annot)
         self.x_test_annot = downsample(self.x_test_annot)
-        print(f"Downsampled to size: {downsample_size}")
+        print(f"Downsampled to size: {self.downsample_size}")
 
     def extract_patches(self, size=(224, 224), overlap=0.5):
         def get_patches(dataset):
