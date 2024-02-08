@@ -3,6 +3,9 @@ create_dataset.py
 """
 
 import os
+import sys
+
+sys.path.append(os.getcwd())
 from utils.config import load_config
 from utils.dataset import FungalDataLoader
 
