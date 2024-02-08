@@ -158,7 +158,7 @@ class FungalDataLoader:
         self.x_train_slides = downsample(self.x_train_slides)
         self.x_val_slides = downsample(self.x_val_slides)
         self.x_test_slides = downsample(self.x_test_slides)
-        self.x_annot = downsample(self.x_annot)
+        self.x_train_annot = downsample(self.x_annot)
         self.x_val_annot = downsample(self.x_val_annot)
         self.x_test_annot = downsample(self.x_test_annot)
         print(f"Downsampled to size: {downsample_size}")
