@@ -164,3 +164,5 @@ cython_debug/
 
 config*.yaml
 !config-template.yaml
+files/
+experiements/
