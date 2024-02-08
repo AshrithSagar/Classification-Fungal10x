@@ -262,6 +262,33 @@ class FungalDataLoader:
             self.y_test_slides, self.x_test_patch_labels
         )
 
+        self.x_train = tf.boolean_mask(
+            self.x_train_patches,
+            self.x_train_patches_filtermask,
+        )
+        self.y_train = tf.boolean_mask(
+            self.y_train_patches,
+            self.x_train_patches_filtermask,
+        )
+
+        self.x_val = tf.boolean_mask(
+            self.x_val_patches,
+            self.x_val_patches_filtermask,
+        )
+        self.y_val = tf.boolean_mask(
+            self.y_val_patches,
+            self.x_val_patches_filtermask,
+        )
+
+        self.x_test = tf.boolean_mask(
+            self.x_test_patches,
+            self.x_test_patches_filtermask,
+        )
+        self.y_test = tf.boolean_mask(
+            self.y_test_patches,
+            self.x_test_patches_filtermask,
+        )
+
     def patches_info(self):
         def patches_verbose(check_bool, patches_filtermask, patch_labels):
             mask = patches_filtermask == check_bool
@@ -283,6 +310,14 @@ class FungalDataLoader:
         for name, filtermask, patch_labels in dataset_info:
             print(name, patches_verbose(True, filtermask, patch_labels))
             print(name, patches_verbose(False, filtermask, patch_labels))
+
+    def patches_split_info(self):
+        patches_split_verbose = (
+            lambda x: f"{x.shape[0]} (F:{int(np.sum(x == 1))}, NF:{int(np.sum(x == 0))})"
+        )
+        print("Training patches:", patches_split_verbose(self.y_train))
+        print("Validation patches:", patches_split_verbose(self.y_val))
+        print("Test patches:", patches_split_verbose(self.y_test))
 
     def save_patches(self, data_dir, sub_dir, label, patches, save_ext="png"):
         sub_dir = os.path.join(data_dir, sub_dir)
