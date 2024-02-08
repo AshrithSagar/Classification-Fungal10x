@@ -413,7 +413,7 @@ class FungalDataLoader:
         print(augment_verbose(self.x_train_nonfungal, self.x_train_nonfungal_augmented))
 
     def save_patches(self):
-        def save(self, data_dir, sub_dir, dataset, labels, save_ext="png"):
+        def save(data_dir, sub_dir, dataset, labels, save_ext="png"):
             sub_dir = os.path.join(data_dir, sub_dir)
             os.makedirs(sub_dir, exist_ok=True)
 
@@ -434,7 +434,7 @@ class FungalDataLoader:
                 pil_img = Image.fromarray((img.numpy() * 1).astype(np.uint8))
                 pil_img.save(img_file)
 
-        def save2(self, data_dir, sub_dir, label, dataset, save_ext="png"):
+        def save2(data_dir, sub_dir, label, dataset, save_ext="png"):
             sub_dir = os.path.join(data_dir, sub_dir)
             os.makedirs(sub_dir, exist_ok=True)
             os.makedirs(os.path.join(sub_dir, label), exist_ok=True)
@@ -448,7 +448,7 @@ class FungalDataLoader:
         os.makedirs(self.data_dir, exist_ok=True)
         print(self.data_dir)
 
-        save_dir = f"dataset/fold_{self.fold}/"
+        save_dir = os.path.join(self.data_dir, f"fold_{self.fold}")
         os.makedirs(save_dir, exist_ok=True)
         print(save_dir)
 
