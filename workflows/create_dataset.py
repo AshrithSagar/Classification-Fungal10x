@@ -19,6 +19,7 @@ if __name__ == "__main__":
         args["annot_dir"],
     )
 
+    fdl.check_gpu()
     fdl.load_slides()
     fdl.create_splits()
     for fold in fdl.create_kfold_splits():

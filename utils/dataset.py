@@ -20,6 +20,12 @@ class FungalDataLoader:
         self.annot_dir = annot_dir
         self.slide_dims = (1200, 1600)
         tf.random.set_seed(seed)
+        os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+        os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
+
+    def check_gpu(self):
+        print("GPU:", "Enabled" if tf.test.gpu_device_name() else "Disabled")
+        print(tf.config.list_physical_devices())
 
     def load_slides(self):
         def load(images_dir):
