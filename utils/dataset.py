@@ -184,6 +184,10 @@ class FungalDataLoader:
         self.x_train_patches = get_patches(self.x_train_slides)
         self.x_val_patches = get_patches(self.x_val_slides)
         self.x_test_patches = get_patches(self.x_test_slides)
+        self.x_train_annot_patches = get_patches(self.x_train_annot)
+        self.x_val_annot_patches = get_patches(self.x_val_annot)
+        self.x_test_annot_patches = get_patches(self.x_test_annot)
+        self.annot_dataset_patches = get_patches(self.annot_dataset)
 
     def get_annotations(self, threshold=200):
         def get_annot(patches):
@@ -207,16 +211,16 @@ class FungalDataLoader:
             return patch_labels, patches_binary
 
         self.x_train_patch_labels, self.x_train_patches_annot = get_annot(
-            self.x_train_annot,
+            self.x_train_annot_patches,
         )
         self.x_val_patch_labels, self.x_val_patches_annot = get_annot(
-            self.x_val_annot,
+            self.x_val_annot_patches,
         )
         self.x_test_patch_labels, self.x_test_patches_annot = get_annot(
-            self.x_test_annot,
+            self.x_test_annot_patches,
         )
 
-        self.annot_patches_labels, _ = get_annot(self.annot_dataset)
+        self.annot_patches_labels, _ = get_annot(self.annot_dataset_patches)
 
     def verify_annotations(self):
         nonfungal_indices = [
