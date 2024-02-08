@@ -3,7 +3,9 @@ dataset.py
 """
 
 import os
+import shutil
 import numpy as np
+import pandas as pd
 from tqdm import tqdm
 from PIL import Image
 import tensorflow as tf
@@ -302,12 +304,12 @@ class FungalDataLoader:
             state = "considered" if check_bool else "discarded"
             return f"patches {state}: {total}; (F:{fungal}, NF:{nonfungal})"
 
-        dataset_info = [
+        info = [
             ("Train", self.x_train_patches_filtermask, self.x_train_patch_labels),
             ("Validation", self.x_val_patches_filtermask, self.x_val_patch_labels),
             ("Test", self.x_test_patches_filtermask, self.x_test_patch_labels),
         ]
-        for name, filtermask, patch_labels in dataset_info:
+        for name, filtermask, patch_labels in info:
             print(name, patches_verbose(True, filtermask, patch_labels))
             print(name, patches_verbose(False, filtermask, patch_labels))
 
@@ -319,13 +321,165 @@ class FungalDataLoader:
         print("Validation patches:", patches_split_verbose(self.y_val))
         print("Test patches:", patches_split_verbose(self.y_test))
 
-    def save_patches(self, data_dir, sub_dir, label, patches, save_ext="png"):
-        sub_dir = os.path.join(data_dir, sub_dir)
-        os.makedirs(sub_dir, exist_ok=True)
-        os.makedirs(os.path.join(sub_dir, label), exist_ok=True)
+    def segregate_patches(self):
+        def segregate(dataset, labels):
+            f_idx = np.where(labels == 1)[0]
+            f_imgs = tf.gather(dataset, f_idx)
 
-        for idx, patch in tqdm(enumerate(patches)):
-            patch = patch[0].numpy()
-            patch_file = os.path.join(sub_dir, label, f"{idx:04}.{save_ext}")
-            pil_img = Image.fromarray((patch * 1).astype(np.uint8))
-            pil_img.save(patch_file)
+            nf_idx = np.where(labels == 0)[0]
+            nf_imgs = tf.gather(dataset, nf_idx)
+
+            return f_imgs, nf_imgs
+
+        self.x_train_fungal, self.x_train_nonfungal = segregate(
+            self.x_train, self.y_train
+        )
+
+    def perform_augmentation(self, use_augment=True):
+        def augment_image(image):
+            # List of all possible transformations. Original image is included by default
+            transformations = [
+                lambda x: tf.image.flip_left_right(x),
+                lambda x: tf.image.flip_up_down(x),
+                lambda x: tf.image.flip_up_down(tf.image.flip_left_right(x)),
+                lambda x: tf.image.rot90(x, k=1),  # 90 degree
+                lambda x: tf.image.rot90(x, k=2),  # 180 degree
+                lambda x: tf.image.rot90(x, k=3),  # 270 degree
+            ]
+
+            aug_images = [transform(image) for transform in transformations]
+            aug_dataset = tf.convert_to_tensor(aug_images)
+            return aug_dataset
+
+        def augment_dataset(train_dataset, target_count=-1):
+            augmented_dataset = tf.map_fn(augment_image, train_dataset)
+            augmented_dataset = tf.reshape(augmented_dataset, shape=[-1, 224, 224, 3])
+
+            # Take all original images for both datasets
+            original_images = train_dataset
+
+            # Make target_count the sum of counts of train_dataset and augmented_dataset
+            if target_count == -1:
+                target_count = (
+                    tf.shape(train_dataset)[0] + tf.shape(augmented_dataset)[0]
+                )
+
+            # Take all the original images and fill up the remaining count with augmented samples
+            current_count = tf.shape(original_images)[0]
+            remaining_count = tf.maximum(
+                0, target_count - current_count
+            )  # Ensure non-negative value
+
+            # Include original samples and augmented samples to fill up the remaining count
+            train_aug = tf.concat(
+                [original_images, augmented_dataset[:remaining_count]], axis=0
+            )
+
+            train_aug = tf.random.shuffle(train_aug, seed=self.seed)
+            return train_aug
+
+        # Take all original images for x_train_fungal and fill up the augmentations for x_train_nonfungal
+        if not use_augment:
+            self.x_train_fungal_augmented = self.x_train_fungal
+            self.x_train_nonfungal_augmented = self.x_train_nonfungal
+            return
+
+        self.x_train_fungal_augmented = augment_dataset(
+            self.x_train_fungal,
+            target_count=-1,
+        )
+        self.x_train_nonfungal_augmented = augment_dataset(
+            self.x_train_nonfungal,
+            target_count=len(self.x_train_fungal_augmented),
+        )
+
+    def augment_info(self):
+        augment_verbose = lambda x, y: f"{x.shape[0]} => {y.shape[0]}"
+        print("Train fungal patches:")
+        print(augment_verbose(self.x_train_fungal, self.x_train_fungal_augmented))
+        print("Train nonfungal patches")
+        print(augment_verbose(self.x_train_nonfungal, self.x_train_nonfungal_augmented))
+
+    def save_patches(self):
+        def save(self, data_dir, sub_dir, dataset, labels, save_ext="png"):
+            sub_dir = os.path.join(data_dir, sub_dir)
+            os.makedirs(sub_dir, exist_ok=True)
+
+            os.makedirs(os.path.join(sub_dir, "fungal"), exist_ok=True)
+            os.makedirs(os.path.join(sub_dir, "nonfungal"), exist_ok=True)
+
+            f_idx, nf_idx = 0, 0
+            for img, label in tqdm(zip(dataset, labels)):
+                label = label.numpy()
+                class_dir = "fungal" if label else "nonfungal"
+                if label:
+                    img_idx = f_idx
+                    f_idx += 1
+                else:
+                    img_idx = nf_idx
+                    nf_idx += 1
+                img_file = os.path.join(sub_dir, class_dir, f"{img_idx:04}.{save_ext}")
+                pil_img = Image.fromarray((img.numpy() * 1).astype(np.uint8))
+                pil_img.save(img_file)
+
+        def save2(self, data_dir, sub_dir, label, dataset, save_ext="png"):
+            sub_dir = os.path.join(data_dir, sub_dir)
+            os.makedirs(sub_dir, exist_ok=True)
+            os.makedirs(os.path.join(sub_dir, label), exist_ok=True)
+
+            for idx, img in tqdm(enumerate(dataset)):
+                img_file = os.path.join(sub_dir, label, f"{idx:04}.{save_ext}")
+                pil_img = Image.fromarray((img.numpy() * 1).astype(np.uint8))
+                pil_img.save(img_file)
+
+        self.data_dir = f"dataset/{self.data_dir_name}-{self.downsample_size[0]}_{self.downsample_size[1]}"
+        os.makedirs(self.data_dir, exist_ok=True)
+        print(self.data_dir)
+
+        save_dir = f"dataset/fold_{self.fold}/"
+        os.makedirs(save_dir, exist_ok=True)
+        print(save_dir)
+
+        save2(save_dir, "train", "fungal", self.x_train_fungal_augmented)
+        save2(save_dir, "train", "nonfungal", self.x_train_nonfungal_augmented)
+        save(save_dir, "train_unaugmented", self.x_train, self.y_train)
+        save(save_dir, "val", self.x_val, self.y_val)
+        save(save_dir, "test", self.x_test, self.y_test)
+
+    def zip_data_dir(self, data_dir=None, sub_dir=None):
+        def zip(data_dir):
+            zip_name = os.path.basename(os.path.normpath(data_dir))
+            print(zip_name)
+
+            if not sub_dir:
+                # ZIP entire data_set folder
+                shutil.make_archive(zip_name, "zip", data_dir)
+            else:
+                # ZIP specific subdirectory
+                sub_dir_path = os.path.join(data_dir, sub_dir)
+                shutil.make_archive(zip_name, "zip", sub_dir_path)
+
+        zip(data_dir or self.data_dir)
+
+    def dataset_info(self, data_dir=None):
+        def dir_info(data_dir):
+            dir_info = {}
+            a_dir_path = os.path.join(
+                data_dir,
+            )
+            for a_dir in os.listdir(a_dir_path):
+                b_dir_path = os.path.join(a_dir_path, a_dir)
+                b_dict = {}
+                for b_dir in os.listdir(b_dir_path):
+                    c_dir = os.path.join(b_dir_path, b_dir)
+                    b_dict.update({b_dir: len(os.listdir(c_dir))})  # TODO
+                dir_info.update({a_dir: b_dict})
+            return dir_info
+
+        if not data_dir:
+            data_dir = self.data_dir
+
+        dir_info = dir_info(data_dir)
+        df_dir_info = pd.DataFrame.from_dict(dir_info, orient="index")
+        df_dir_info["total"] = df_dir_info["nonfungal"] + df_dir_info["fungal"]
+        print(df_dir_info)
