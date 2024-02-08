@@ -25,7 +25,10 @@ if __name__ == "__main__":
         fdl.split_info()
         fdl.segregate_slides()
         fdl.save_slides()
-        fdl.downsample_slides()
+        fdl.downsample_slides(
+            size=args["downsample_size"],
+            factor=args["downsample_factor"],
+        )
         fdl.extract_patches()
         fdl.get_annotations()
         fdl.verify_annotations()

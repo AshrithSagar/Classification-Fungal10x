@@ -1,4 +1,6 @@
 ---
 annot_dir: null
 data_dir_name: null
+downsample_factor: null
+downsample_size: null
 slide_dir: null
