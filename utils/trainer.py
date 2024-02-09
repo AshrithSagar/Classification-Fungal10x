@@ -34,7 +34,7 @@ class ModelTrainer:
         print("GPU:", "Enabled" if tf.test.gpu_device_name() else "Disabled")
         print(tf.config.list_physical_devices())
 
-    def set_gpu(device_index):
+    def set_gpu(self, device_index):
         physical_devices = tf.config.list_physical_devices("GPU")
         if physical_devices:
             tf.config.set_visible_devices(physical_devices[device_index], "GPU")
@@ -45,27 +45,27 @@ class ModelTrainer:
         else:
             print("No GPU devices found.")
 
-    def load_dataset(self, use_augment=False, batch_size=32):
+    def load_dataset(self, use_augment=False):
         train_ds_dir = "train_unaugmented" if not use_augment else "train"
         self.train_ds = tf.keras.preprocessing.image_dataset_from_directory(
             os.path.join(self.data_dir, train_ds_dir),
             labels="inferred",
             color_mode="rgb",
-            batch_size=batch_size,
+            batch_size=self.model_args["batch_size"],
             image_size=self.image_dims,
         )
         self.val_ds = tf.keras.preprocessing.image_dataset_from_directory(
             os.path.join(self.data_dir, "val"),
             labels="inferred",
             color_mode="rgb",
-            batch_size=batch_size,
+            batch_size=self.model_args["batch_size"],
             image_size=self.image_dims,
         )
         self.test_ds = tf.keras.preprocessing.image_dataset_from_directory(
             os.path.join(self.data_dir, "test"),
             labels="inferred",
             color_mode="rgb",
-            batch_size=batch_size,
+            batch_size=self.model_args["batch_size"],
             image_size=self.image_dims,
         )
 
@@ -86,7 +86,7 @@ class ModelTrainer:
             verbose=1,
             callbacks=self.callbacks_list,
             initial_epoch=self.epochs_done,
-            epochs=self.max_epochs,
+            epochs=self.model_args["max_epochs"],
         )
         toc = time.time()
 
