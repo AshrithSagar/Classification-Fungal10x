@@ -135,14 +135,11 @@ class ModelTrainer:
                 plt.show()
 
         def get_classification_report():
-            y_pred = np.where(
-                y_pred > 0.5, 1, 0
-            )  # Better to use; https://stackoverflow.com/a/73215222
-            print(classification_report(self.y_test, y_pred))
+            print(classification_report(self.y_test, self.y_pred))
             self.results.update(
                 {
                     "classification_report": classification_report(
-                        self.y_test, y_pred, output_dict=True
+                        self.y_test, self.y_pred, output_dict=True
                     )
                 }
             )
@@ -150,7 +147,7 @@ class ModelTrainer:
         def get_confusion_matrix(show_plots=False):
             plt.clf()
             test_confusion_matrix = tf.math.confusion_matrix(
-                labels=self.y_test, predictions=y_pred
+                labels=self.y_test, predictions=self.y_pred
             ).numpy()
             LABELS = ["fungal", "nonfungal"]
             plt.figure()
@@ -214,7 +211,10 @@ class ModelTrainer:
         )
 
         self.x_test, self.y_test = map(np.array, zip(*self.test_ds.unbatch()))
-        y_pred = self.model.predict(self.x_test)
+        self.y_pred = self.model.predict(self.x_test)
+        self.y_pred = np.where(
+            self.y_pred > 0.5, 1, 0
+        )  # Better to use; https://stackoverflow.com/a/73215222
 
         get_classification_report()
         get_confusion_matrix()
