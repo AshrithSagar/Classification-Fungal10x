@@ -135,7 +135,7 @@ class ModelTrainer:
                 plt.show()
 
         def get_classification_report():
-            print(classification_report(self.y_test, self.y_pred))
+            print(classification_report(self.y_test, self.y_pred, zero_division=np.nan))
             self.results.update(
                 {
                     "classification_report": classification_report(
