@@ -58,7 +58,7 @@ def get_EfficientNetB0(args):
     model.compile(
         loss="binary_crossentropy",
         optimizer=tf.optimizers.Adam(
-            learning_rate=args["model_params"]["learning_rate"]
+            learning_rate=float(args["model_params"]["learning_rate"])
         ),
         metrics=["accuracy"],
     )
