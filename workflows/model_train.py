@@ -22,7 +22,7 @@ if __name__ == "__main__":
                 args["exp_base_dir"], args["model_args"]["exp_name"]
             ),
             exp_name=fold_dir,
-            data_dir=args["model_args"]["data_dir"],
+            data_dir=os.path.join(args["model_args"]["data_dir"], fold_dir),
             model_args=args["model_args"],
             model_params=args["model_params"],
         )
