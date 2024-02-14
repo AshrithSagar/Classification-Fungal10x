@@ -23,7 +23,7 @@ if __name__ == "__main__":
     )
     mt.check_gpu()
     mt.set_gpu(device_index=0)
-    mt.load_dataset(use_augment=False, batch_size=32)
+    mt.load_dataset(use_augment=False)
     mt.model, mt.callbacks_list, mt.epochs_done = get_EfficientNetB0(args)
     mt.info()
     mt.train()
