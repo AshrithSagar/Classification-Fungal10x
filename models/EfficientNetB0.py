@@ -32,11 +32,12 @@ def freeze_layers(model, freeze, verbose=True):
 
 def get_EfficientNetB0(args):
     model_checkpoint_path = os.path.join(
-        args["exp_dir"], "efficientnet-finetune-model.h5"
+        args["model_args"]["exp_dir"], "efficientnet-finetune-model.h5"
     )
-    csv_logger_path = os.path.join(args["exp_dir"], "csv_logger.csv")
+    csv_logger_path = os.path.join(args["model_args"]["exp_dir"], "csv_logger.csv")
     log_dir = os.path.join(
-        args["exp_dir"], "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        args["model_args"]["exp_dir"],
+        "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S"),
     )
 
     base_model = EfficientNetB0(
@@ -104,7 +105,7 @@ def get_EfficientNetB0(args):
             if not csv_data.empty:
                 epochs_done = len(csv_data["epoch"])
 
-    remaining_epochs = max(0, args["max_epochs"] - epochs_done)
+    remaining_epochs = max(0, args["model_args"]["max_epochs"] - epochs_done)
     print(f"{epochs_done} Epochs done; Remaining epochs: {remaining_epochs}")
 
     return model, callbacks_list, epochs_done
