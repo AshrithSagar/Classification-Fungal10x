@@ -6,6 +6,7 @@ downsample_size: null
 slide_dir: null
 trainer:
   exp_base_dir: null
+  folds: null
   model_args:
     batch_size: null
     data_dir: null
