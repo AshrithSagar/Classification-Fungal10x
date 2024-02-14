@@ -169,12 +169,12 @@ class ModelTrainer:
         def get_roc_curve(show_plots=False):
             ns_probs = np.zeros(len(self.y_test))
             ns_auc = roc_auc_score(self.y_test, ns_probs)
-            lr_auc = roc_auc_score(self.y_test, y_pred)
+            lr_auc = roc_auc_score(self.y_test, self.y_pred)
             print("No Skill: ROC AUC=%.3f" % (ns_auc))
             print("efficientnet: ROC AUC=%.3f" % (lr_auc))
 
             ns_fpr, ns_tpr, _ = roc_curve(self.y_test, ns_probs)
-            lr_fpr, lr_tpr, _ = roc_curve(self.y_test, y_pred)
+            lr_fpr, lr_tpr, _ = roc_curve(self.y_test, self.y_pred)
 
             plt.clf()
             plt.plot(ns_fpr, ns_tpr, linestyle="--", label="No Skill")
