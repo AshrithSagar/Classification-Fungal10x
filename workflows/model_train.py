@@ -16,6 +16,7 @@ if __name__ == "__main__":
 
     for fold in args["folds"]:
         fold_dir = f"fold_{fold}"
+        print(f"Training fold: {fold}")
 
         mt = ModelTrainer(
             exp_base_dir=os.path.join(
