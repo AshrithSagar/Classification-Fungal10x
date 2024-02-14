@@ -16,8 +16,8 @@ if __name__ == "__main__":
 
     mt = ModelTrainer(
         exp_base_dir=args["exp_base_dir"],
-        exp_name=args["exp_name"],
-        data_dir=args["data_dir"],
+        exp_name=args["model_args"]["exp_name"],
+        data_dir=args["model_args"]["data_dir"],
         model_args=args["model_args"],
         model_params=args["model_params"],
     )
