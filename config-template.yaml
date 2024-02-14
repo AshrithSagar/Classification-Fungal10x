@@ -7,6 +7,7 @@ slide_dir: null
 trainer:
   exp_base_dir: null
   folds: null
+  gpu: null
   model_args:
     batch_size: null
     data_dir: null
