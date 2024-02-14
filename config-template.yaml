@@ -18,3 +18,4 @@ trainer:
     learning_rate: null
     patience: null
     start_from_epoch: null
+  use_augment: null
