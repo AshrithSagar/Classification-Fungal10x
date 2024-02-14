@@ -15,7 +15,7 @@ if __name__ == "__main__":
     args = load_config(config_file="config.yaml", key="trainer")
 
     for fold in args["folds"]:
-        fold_dir = f"fold-{fold}"
+        fold_dir = f"fold_{fold}"
 
         mt = ModelTrainer(
             exp_base_dir=os.path.join(
