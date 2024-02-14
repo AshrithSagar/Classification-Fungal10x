@@ -139,7 +139,7 @@ class ModelTrainer:
             self.results.update(
                 {
                     "classification_report": classification_report(
-                        self.y_test, self.y_pred, output_dict=True
+                        self.y_test, self.y_pred, output_dict=True, zero_division=np.nan
                     )
                 }
             )
