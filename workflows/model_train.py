@@ -29,7 +29,7 @@ if __name__ == "__main__":
         )
         mt.check_gpu()
         mt.set_gpu(device_index=args["gpu"])
-        mt.load_dataset(use_augment=False)
+        mt.load_dataset(use_augment=args["use_augment"])
         args["model_args"]["exp_dir"] = mt.exp_dir
         mt.model, mt.callbacks_list, mt.epochs_done = get_EfficientNetB0(args)
         mt.info()
