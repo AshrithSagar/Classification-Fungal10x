@@ -254,4 +254,30 @@ class ModelSummary:
 
         results_df = pd.DataFrame(self.results)
         results_df.to_csv(os.path.join(self.exp_dir, "cv_results.csv"), index=False)
+
+        mean_std_metrics = {}
+        classification_report_metrics = ['f1-score', 'precision', 'recall']
+        for metric in ['ROC', 'train_accuracy', 'val_accuracy', 'test_accuracy'] + classification_report_metrics:
+            if metric == 'train_accuracy':
+                metric_values = [result['model_accuracy']['train'] for result in self.results]
+                metric_values = np.array(metric_values)
+            elif metric == 'val_accuracy':
+                metric_values = [result['model_accuracy']['val'] for result in self.results]
+                metric_values = np.array(metric_values)
+            elif metric == 'test_accuracy':
+                metric_values = [result['model_accuracy']['test'] for result in self.results]
+                metric_values = np.array(metric_values)
+            elif metric in classification_report_metrics:
+                metric_values = [result['classification_report']['0'][metric] for result in self.results]
+            else:
+                metric_values = [result[metric] for result in self.results]
+        
+            mean = np.mean(metric_values, axis=0)
+            std = np.std(metric_values, axis=0)
+            mean_std_metrics[metric] = {'mean': mean, 'std': std}
+        
+        mean_std_df = pd.DataFrame(mean_std_metrics).T
+        print("Folds:", folds)
+        print(mean_std_df)
+
         return self.results
