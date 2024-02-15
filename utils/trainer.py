@@ -230,3 +230,28 @@ class ModelTrainer:
         params_file = os.path.join(self.exp_dir, "params.yaml")
         with open(params_file, "w") as outfile:
             yaml.dump(self.model_args, outfile, default_flow_style=False)
+
+
+class ModelSummary:
+    def __init__(self, exp_base_dir, exp_name):
+        self.exp_dir = os.path.join(exp_base_dir, exp_name)
+
+    def get_cv_results(self, folds=None):
+        if folds is None:
+            folds = [
+                fold_dir
+                for fold_dir in os.listdir(self.exp_dir)
+                if os.path.isdir(fold_dir)
+            ]
+        else:
+            folds = [f"fold_{i}" for i in folds]
+
+        self.results = []
+        for fold in folds:
+            results_file = os.path.join(self.exp_dir, fold, "results.yaml")
+            with open(results_file, "r") as infile:
+                self.results.append(yaml.load(infile, Loader=yaml.FullLoader))
+
+        results_df = pd.DataFrame(self.results)
+        results_df.to_csv(os.path.join(self.exp_dir, "cv_results.csv"), index=False)
+        return self.results
