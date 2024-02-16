@@ -15,6 +15,7 @@ if __name__ == "__main__":
 
     gpu = GPUHandler()
     gpu.check()
+    gpu.set(device_index=-1)
 
     fdl = FungalDataLoader(
         args["data_dir_name"],
