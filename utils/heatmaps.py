@@ -16,11 +16,10 @@ from tqdm import tqdm
 
 
 class Heatmaps:
-    def __init__(self, exp_base_dir, exp_name, data_dir):
+    def __init__(self, exp_dir):
         os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
         tf.keras.backend.clear_session()
-        self.exp_dir = os.path.join(exp_base_dir, exp_name)
-        self.data_dir = data_dir
+        self.exp_dir = exp_dir
 
     def make_tilemap(
         self,
