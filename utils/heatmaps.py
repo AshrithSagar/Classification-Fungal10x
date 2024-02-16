@@ -151,6 +151,7 @@ class Heatmaps:
         percentile_score=False,
         alpha=0.4,
         blur=(112, 112),
+        save_ext="png",
     ):
         self.save_dir = save_dir
         os.makedirs(self.save_dir, exist_ok=True)
@@ -176,6 +177,6 @@ class Heatmaps:
             plt.imshow(heatmap)
 
             label_ch = "F" if label == 0 else "N"
-            filename = f"{label_ch}_{slide_name}"
+            filename = f"{label_ch}_{os.path.splitext(slide_name)[0]}.{save_ext}"
             heatmap_path = os.path.join(self.save_dir, filename)
             plt.savefig(heatmap_path)
