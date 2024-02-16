@@ -13,13 +13,14 @@ from utils.dataset import FungalDataLoader
 if __name__ == "__main__":
     args = load_config(config_file="config.yaml")
 
+    gpu = GPUHandler()
+    gpu.check()
+
     fdl = FungalDataLoader(
         args["data_dir_name"],
         args["slide_dir"],
         args["annot_dir"],
     )
-
-    GPUHandler.check()
     fdl.load_slides()
     fdl.create_splits()
     for fold in fdl.create_kfold_splits():

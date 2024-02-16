@@ -14,8 +14,9 @@ from models.EfficientNetB0 import get_EfficientNetB0
 if __name__ == "__main__":
     args = load_config(config_file="config.yaml", key="trainer")
 
-    GPUHandler.check()
-    GPUHandler.set(device_index=args["gpu"])
+    gpu = GPUHandler()
+    gpu.check()
+    gpu.set(device_index=args["gpu"])
 
     for fold in args["folds"]:
         fold_dir = f"fold_{fold}"
