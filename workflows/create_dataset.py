@@ -6,7 +6,7 @@ import os
 import sys
 
 sys.path.append(os.getcwd())
-from utils.config import load_config
+from utils.config import GPUHandler, load_config
 from utils.dataset import FungalDataLoader
 
 
@@ -19,7 +19,7 @@ if __name__ == "__main__":
         args["annot_dir"],
     )
 
-    fdl.check_gpu()
+    GPUHandler.check()
     fdl.load_slides()
     fdl.create_splits()
     for fold in fdl.create_kfold_splits():

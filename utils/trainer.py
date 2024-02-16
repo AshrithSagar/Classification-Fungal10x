@@ -30,21 +30,6 @@ class ModelTrainer:
         self.model = None
         self.results = {}
 
-    def check_gpu(self):
-        print("GPU:", "Enabled" if tf.test.gpu_device_name() else "Disabled")
-        print(tf.config.list_physical_devices())
-
-    def set_gpu(self, device_index):
-        physical_devices = tf.config.list_physical_devices("GPU")
-        if physical_devices:
-            tf.config.set_visible_devices(physical_devices[device_index], "GPU")
-            tf.config.experimental.set_memory_growth(
-                physical_devices[device_index], True
-            )
-            print(f"Selecting GPU: {physical_devices[device_index]}")
-        else:
-            print("No GPU devices found.")
-
     def load_dataset(self, use_augment=False):
         train_ds_dir = "train_unaugmented" if not use_augment else "train"
         self.train_ds = tf.keras.preprocessing.image_dataset_from_directory(

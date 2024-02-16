@@ -6,7 +6,7 @@ import os
 import sys
 
 sys.path.append(os.getcwd())
-from utils.config import load_config
+from utils.config import GPUHandler, load_config
 from utils.trainer import ModelTrainer
 from models.EfficientNetB0 import get_EfficientNetB0
 
@@ -27,8 +27,8 @@ if __name__ == "__main__":
             model_args=args["model_args"],
             model_params=args["model_params"],
         )
-        mt.check_gpu()
-        mt.set_gpu(device_index=args["gpu"])
+        GPUHandler.check()
+        GPUHandler.set(device_index=args["gpu"])
         mt.load_dataset(use_augment=args["use_augment"])
         args["model_args"]["exp_dir"] = mt.exp_dir
         mt.model, mt.callbacks_list, mt.epochs_done = get_EfficientNetB0(args)
