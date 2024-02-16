@@ -30,7 +30,7 @@ if __name__ == "__main__":
     )
     fdl.load_slides()
     fdl.create_splits()
-    fdl.create_kfold_splits()
+    next(fdl.create_kfold_splits())
     fdl.split_info()
     fdl.downsample_slides(
         size=d_args["downsample_size"],
