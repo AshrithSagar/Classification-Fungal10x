@@ -13,7 +13,7 @@ from utils.dataset import FungalDataLoader
 
 
 if __name__ == "__main__":
-    args = load_config(config_file="config.yaml")
+    args = load_config(config_file="config.yaml", key="dataset")
 
     gpu = GPUHandler()
     gpu.check()
