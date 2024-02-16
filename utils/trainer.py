@@ -216,6 +216,19 @@ class ModelTrainer:
         with open(params_file, "w") as outfile:
             yaml.dump(self.model_args, outfile, default_flow_style=False)
 
+    def predict(self, patched_slides, save_file=None):
+        predictions = []
+        for index, patches in enumerate(patched_slides):
+            preds = self.model.predict_on_batch(patches)
+            print(f"Slide {index+1}: [{', '.join(str(x[0]) for x in preds)}]")
+            predictions.append(preds)
+        predictions = np.squeeze(np.array(predictions))
+
+        if save_file:
+            np.savetxt(save_file, predictions, delimiter=",")
+
+        return predictions
+
 
 class ModelSummary:
     def __init__(self, exp_base_dir, exp_name):

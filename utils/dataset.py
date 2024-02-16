@@ -176,22 +176,23 @@ class FungalDataLoader:
                 rates=(1, 1, 1, 1),
                 padding="VALID",
             )
-            num_patches = all_patches.shape[1] * all_patches.shape[2]
+            patches_shape = (all_patches.shape[1], all_patches.shape[2])
+            num_patches = np.prod(patches_shape)
             depth = dataset.shape[3]
             all_patches = tf.reshape(
                 all_patches, (-1, num_patches, *self.patch_dims, depth)
             )
-            return all_patches
+            return all_patches, patches_shape
 
         self.patch_dims = size
         stride = tuple(int(s * (1 - overlap)) for s in self.patch_dims)
-        self.x_train_patches = get_patches(self.x_train_slides)
-        self.x_val_patches = get_patches(self.x_val_slides)
-        self.x_test_patches = get_patches(self.x_test_slides)
-        self.x_train_annot_patches = get_patches(self.x_train_annot)
-        self.x_val_annot_patches = get_patches(self.x_val_annot)
-        self.x_test_annot_patches = get_patches(self.x_test_annot)
-        self.annot_dataset_patches = get_patches(self.annot_dataset)
+        self.x_train_patches, _ = get_patches(self.x_train_slides)
+        self.x_val_patches, _ = get_patches(self.x_val_slides)
+        self.x_test_patches, self.patches_shape = get_patches(self.x_test_slides)
+        self.x_train_annot_patches, _ = get_patches(self.x_train_annot)
+        self.x_val_annot_patches, _ = get_patches(self.x_val_annot)
+        self.x_test_annot_patches, _ = get_patches(self.x_test_annot)
+        self.annot_dataset_patches, _ = get_patches(self.annot_dataset)
 
     def get_annotations(self, threshold=200):
         def get_annot(patches):

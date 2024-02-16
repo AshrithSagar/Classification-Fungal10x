@@ -5,6 +5,14 @@ dataset:
   downsample_factor: null
   downsample_size: null
   slide_dir: null
+heatmaps:
+  alpha: null
+  blur: null
+  cmap: null
+  overlap: null
+  patch_size: null
+  percentile_scale: null
+  percentile_score: null
 trainer:
   exp_base_dir: null
   folds: null
