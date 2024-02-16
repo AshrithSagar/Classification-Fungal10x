@@ -28,6 +28,7 @@ class GPUHandler:
     def set(self, device_index):
         if device_index == -1:
             os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+            tf.config.set_visible_devices([], "GPU")
             print("Selecting CPU")
             return
 
