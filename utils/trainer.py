@@ -4,13 +4,15 @@ trainer.py
 
 import os
 import time
-import yaml
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import tensorflow as tf
 import seaborn as sns
+import tensorflow as tf
+import yaml
 from sklearn.metrics import classification_report, roc_auc_score, roc_curve
+from tqdm import tqdm
 
 
 class ModelTrainer:
@@ -218,7 +220,12 @@ class ModelTrainer:
 
     def predict(self, patched_slides, save_file=None, verbose=None):
         predictions = []
-        for index, patches in enumerate(patched_slides):
+        iterator = (
+            patched_slides
+            if verbose is not None
+            else tqdm(patched_slides, desc="Predicting")
+        )
+        for index, patches in enumerate(iterator):
             preds = self.model.predict_on_batch(patches)
             if verbose:
                 print(f"Slide {index+1}: [{', '.join(str(x[0]) for x in preds)}]")
