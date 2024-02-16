@@ -14,9 +14,12 @@ from models.EfficientNetB0 import get_EfficientNetB0
 if __name__ == "__main__":
     args = load_config(config_file="config.yaml", key="trainer")
 
+    GPUHandler.check()
+    GPUHandler.set(device_index=args["gpu"])
+
     for fold in args["folds"]:
         fold_dir = f"fold_{fold}"
-        print(f"Training fold: {fold}")
+        print(f"Running on fold: {fold}")
 
         mt = ModelTrainer(
             exp_base_dir=os.path.join(
@@ -27,8 +30,6 @@ if __name__ == "__main__":
             model_args=args["model_args"],
             model_params=args["model_params"],
         )
-        GPUHandler.check()
-        GPUHandler.set(device_index=args["gpu"])
         mt.load_dataset(use_augment=args["use_augment"])
         args["model_args"]["exp_dir"] = mt.exp_dir
         mt.model, mt.callbacks_list, mt.epochs_done = get_EfficientNetB0(args)
