@@ -21,6 +21,9 @@ class Heatmaps:
         tf.keras.backend.clear_session()
         self.exp_dir = exp_dir
 
+    def calculate_stride(self, size, overlap):
+        return tuple(int(s * (1 - overlap)) for s in size)
+
     def make_tilemap(
         self,
         predictions,
