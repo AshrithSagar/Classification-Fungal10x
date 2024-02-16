@@ -20,6 +20,7 @@ class Heatmaps:
         os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
         tf.keras.backend.clear_session()
         self.exp_dir = exp_dir
+        os.makedirs(self.exp_dir, exist_ok=True)
 
     def calculate_stride(self, size, overlap):
         return tuple(int(s * (1 - overlap)) for s in size)
@@ -152,6 +153,7 @@ class Heatmaps:
         blur=(112, 112),
     ):
         self.save_dir = save_dir
+        os.makedirs(self.save_dir, exist_ok=True)
         print(f"Saving in {self.save_dir}")
 
         for slide, slide_name, preds, label in tqdm(
