@@ -78,6 +78,11 @@ class FungalDataLoader:
                 self.y_slides[val_idx],
             )
 
+            self.x_train_slide_names, self.x_val_slide_names = (
+                self.x_names[train_idx],
+                self.x_names[val_idx],
+            )
+
             self.x_train_annot, self.x_val_annot = (
                 self.x_annot[train_idx],
                 self.x_annot[val_idx],
@@ -99,43 +104,54 @@ class FungalDataLoader:
         print("Test slides:", slides_split_verbose(self.y_test_slides))
 
     def segregate_slides(self):
-        def segregate(slides, labels):
+        def segregate(slides, labels, slide_names=None):
             f_idx = np.where(labels == 1)[0]
-            f_imgs = tf.gather(slides, f_idx)
-
             nf_idx = np.where(labels == 0)[0]
+
+            f_imgs = tf.gather(slides, f_idx)
             nf_imgs = tf.gather(slides, nf_idx)
 
-            return f_imgs, nf_imgs
+            if slide_names:
+                f_slide_names = slide_names[f_idx]
+                nf_slide_names = slide_names[nf_idx]
+                return f_imgs, nf_imgs, f_slide_names, nf_slide_names
+            else:
+                return f_imgs, nf_imgs
 
-        self.x_train_slides_fungal, self.x_train_slides_nonfungal = segregate(
-            self.x_train_slides, self.y_train_slides
-        )
-        self.x_val_slides_fungal, self.x_val_slides_nonfungal = segregate(
-            self.x_val_slides, self.y_val_slides
-        )
-        self.x_test_slides_fungal, self.x_test_slides_nonfungal = segregate(
-            self.x_test_slides, self.y_test_slides
-        )
+        datasets = [
+            (
+                self.x_train_slides,
+                self.y_train_slides,
+                self.x_train_slide_names,
+                "train",
+            ),
+            (self.x_val_slides, self.y_val_slides, self.x_val_slide_names, "val"),
+            (self.x_test_slides, self.y_test_slides, self.x_test_slide_names, "test"),
+            (self.x_train_annot, self.y_train_annot, None, "train"),
+            (self.x_val_annot, self.y_val_annot, None, "val"),
+            (self.x_test_annot, self.y_test_annot, None, "test"),
+        ]
 
-        self.x_train_annot_fungal, self.x_train_annot_nonfungal = segregate(
-            self.x_train_annot, self.y_train_annot
-        )
-        self.x_val_annot_fungal, self.x_val_annot_nonfungal = segregate(
-            self.x_val_annot, self.y_val_annot
-        )
-        self.x_test_annot_fungal, self.x_test_annot_nonfungal = segregate(
-            self.x_test_annot, self.y_test_annot
-        )
+        for slides, labels, slide_names, dataset_type in datasets:
+            f_imgs, nf_imgs, f_slide_names, nf_slide_names = segregate(
+                slides, labels, slide_names
+            )
+            setattr(self, f"x_{dataset_type}_slides_fungal", f_imgs)
+            setattr(self, f"x_{dataset_type}_slides_nonfungal", nf_imgs)
+            if slide_names:
+                setattr(self, f"x_{dataset_type}_slide_names_fungal", f_slide_names)
+                setattr(self, f"x_{dataset_type}_slide_names_nonfungal", nf_slide_names)
 
     def save_slides(self, save_ext="png"):
-        def save(data_dir, sub_dir, label, dataset):
+        def save(data_dir, sub_dir, label, dataset, slide_names):
             sub_dir = os.path.join(data_dir, sub_dir)
             os.makedirs(sub_dir, exist_ok=True)
             os.makedirs(os.path.join(sub_dir, label), exist_ok=True)
 
-            for idx, img in tqdm(enumerate(dataset)):
-                img_file = os.path.join(sub_dir, label, f"{idx:04}.{save_ext}")
+            for img, name in tqdm(zip(dataset, slide_names)):
+                img_file = os.path.join(
+                    sub_dir, label, f"{os.path.splitext(name)[0]}.{save_ext}"
+                )
                 pil_img = Image.fromarray((img.numpy() * 1).astype(np.uint8))
                 pil_img.save(img_file)
 
@@ -147,12 +163,48 @@ class FungalDataLoader:
         os.makedirs(save_dir, exist_ok=True)
         print(save_dir)
 
-        save(save_dir, "train", "fungal", self.x_train_slides_fungal)
-        save(save_dir, "train", "nonfungal", self.x_train_slides_nonfungal)
-        save(save_dir, "val", "fungal", self.x_val_slides_fungal)
-        save(save_dir, "val", "nonfungal", self.x_val_slides_nonfungal)
-        save(save_dir, "test", "fungal", self.x_test_slides_fungal)
-        save(save_dir, "test", "nonfungal", self.x_test_slides_nonfungal)
+        save(
+            save_dir,
+            "train",
+            "fungal",
+            self.x_train_slides_fungal,
+            self.x_train_slide_names_fungal,
+        )
+        save(
+            save_dir,
+            "train",
+            "nonfungal",
+            self.x_train_slides_nonfungal,
+            self.x_train_slide_names_nonfungal,
+        )
+        save(
+            save_dir,
+            "val",
+            "fungal",
+            self.x_val_slides_fungal,
+            self.x_val_slide_names_fungal,
+        )
+        save(
+            save_dir,
+            "val",
+            "nonfungal",
+            self.x_val_slides_nonfungal,
+            self.x_val_slide_names_nonfungal,
+        )
+        save(
+            save_dir,
+            "test",
+            "fungal",
+            self.x_test_slides_fungal,
+            self.x_test_slide_names_fungal,
+        )
+        save(
+            save_dir,
+            "test",
+            "nonfungal",
+            self.x_test_slides_nonfungal,
+            self.x_test_slide_names_nonfungal,
+        )
 
     def downsample_slides(self, size=None, factor=None, preserve_aspect_ratio=True):
         def downsample(slides):
