@@ -139,6 +139,21 @@ class FungalDataLoader:
                 pil_img = Image.fromarray((img.numpy() * 1).astype(np.uint8))
                 pil_img.save(img_file)
 
+        data_dir = f"dataset/{self.data_dir_name}-slides"
+        os.makedirs(data_dir, exist_ok=True)
+        print(data_dir)
+
+        save_dir = os.path.join(data_dir, f"fold_{self.fold}")
+        os.makedirs(save_dir, exist_ok=True)
+        print(save_dir)
+
+        save(save_dir, "train", "fungal", self.x_train_slides_fungal)
+        save(save_dir, "train", "nonfungal", self.x_train_slides_nonfungal)
+        save(save_dir, "val", "fungal", self.x_val_slides_fungal)
+        save(save_dir, "val", "nonfungal", self.x_val_slides_nonfungal)
+        save(save_dir, "test", "fungal", self.x_test_slides_fungal)
+        save(save_dir, "test", "nonfungal", self.x_test_slides_nonfungal)
+
     def downsample_slides(self, size=None, factor=None, preserve_aspect_ratio=True):
         def downsample(slides):
             return tf.image.resize(
