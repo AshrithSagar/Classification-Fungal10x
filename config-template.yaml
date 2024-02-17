@@ -1,6 +1,7 @@
 ---
 dataset:
   annot_dir: null
+  create_zip: null
   data_dir_name: null
   downsample_factor: null
   downsample_size: null

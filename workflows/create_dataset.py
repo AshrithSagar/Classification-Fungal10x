@@ -43,5 +43,6 @@ if __name__ == "__main__":
         fdl.perform_augmentation()
         fdl.augment_info()
         fdl.save_patches()
-        fdl.zip_data_dir()
+        if args["create_zip"]:
+            fdl.zip_data_dir()
         # fdl.dataset_info()
