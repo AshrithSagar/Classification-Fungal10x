@@ -57,7 +57,9 @@ if __name__ == "__main__":
         mt.model, mt.callbacks_list, mt.epochs_done = get_EfficientNetB0(t_args)
         mt.info()
 
-        predictions = mt.predict(fdl.x_test_patches, save_file="preds.csv")
+        predictions = mt.predict(
+            fdl.x_test_patches, overwrite=t_args["overwrite_preds"]
+        )
 
         hm = Heatmaps(exp_dir=mt.exp_dir)
         hm.save(

@@ -218,7 +218,14 @@ class ModelTrainer:
         with open(params_file, "w") as outfile:
             yaml.dump(self.model_args, outfile, default_flow_style=False)
 
-    def predict(self, patched_slides, save_file=None, verbose=None):
+    def predict(
+        self, patched_slides, save_file="preds.csv", overwrite=False, verbose=None
+    ):
+        file = os.path.join(self.exp_dir, save_file)
+        if not overwrite:
+            predictions = np.loadtxt(file, delimiter=",")
+            return predictions
+
         predictions = []
         iterator = (
             patched_slides
@@ -230,11 +237,9 @@ class ModelTrainer:
             if verbose:
                 print(f"Slide {index+1}: [{', '.join(str(x[0]) for x in preds)}]")
             predictions.append(preds)
-        predictions = np.squeeze(np.array(predictions))
 
-        if save_file:
-            file = os.path.join(self.exp_dir, save_file)
-            np.savetxt(file, predictions, delimiter=",")
+        predictions = np.squeeze(np.array(predictions))
+        np.savetxt(file, predictions, delimiter=",")
 
         return predictions
 
