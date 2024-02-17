@@ -222,7 +222,7 @@ class ModelTrainer:
         self, patched_slides, save_file="preds.csv", overwrite=False, verbose=None
     ):
         file = os.path.join(self.exp_dir, save_file)
-        if not overwrite:
+        if not overwrite and os.path.exists(file):
             predictions = np.loadtxt(file, delimiter=",")
             return predictions
 
