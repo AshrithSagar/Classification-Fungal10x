@@ -69,7 +69,7 @@ if __name__ == "__main__":
 
         hm = Heatmaps(exp_dir)
         hm.save(
-            save_dir=os.path.join(hm.exp_dir, "heatmaps"),
+            save_dir="heatmaps",
             slides_annot=fdl.x_test_annot,
             slide_names=fdl.x_test_slide_names,
             predictions=predictions,

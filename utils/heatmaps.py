@@ -153,7 +153,7 @@ class Heatmaps:
         blur=(112, 112),
         save_ext="png",
     ):
-        self.save_dir = save_dir
+        self.save_dir = os.path.join(self.exp_dir, save_dir)
         os.makedirs(self.save_dir, exist_ok=True)
         print(f"Saving in {self.save_dir}")
 
