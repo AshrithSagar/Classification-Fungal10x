@@ -233,7 +233,8 @@ class ModelTrainer:
         predictions = np.squeeze(np.array(predictions))
 
         if save_file:
-            np.savetxt(save_file, predictions, delimiter=",")
+            file = os.path.join(self.exp_dir, save_file)
+            np.savetxt(file, predictions, delimiter=",")
 
         return predictions
 
