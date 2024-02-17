@@ -35,11 +35,7 @@ class FungalDataLoader:
                     labels.append(label)
                     names.append(image_name)
 
-            self.slide_dataset = np.array(dataset)
-            self.slide_labels = np.array(labels)
-            self.slide_names = names
-
-            return self.slide_dataset, self.slide_labels, self.slide_names
+            return np.array(dataset), np.array(labels), names
 
         self.slide_dataset, self.slide_labels, self.slide_names = load(self.slide_dir)
         self.annot_dataset, _, _ = load(self.annot_dir)
