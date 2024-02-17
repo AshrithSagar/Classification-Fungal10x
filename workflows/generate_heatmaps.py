@@ -6,6 +6,7 @@ import os
 import sys
 
 sys.path.append(os.getcwd())
+import numpy as np
 from models.EfficientNetB0 import get_EfficientNetB0
 
 from utils.config import GPUHandler, load_config
@@ -43,25 +44,30 @@ if __name__ == "__main__":
         fold_dir = f"fold_{fold}"
         print(f"Running on fold: {fold}")
 
-        mt = ModelTrainer(
-            exp_base_dir=os.path.join(
-                t_args["exp_base_dir"], t_args["model_args"]["exp_name"]
-            ),
-            exp_name=fold_dir,
-            data_dir=os.path.join(t_args["model_args"]["data_dir"], fold_dir),
-            model_args=t_args["model_args"],
-            model_params=t_args["model_params"],
-        )
-        mt.load_dataset(use_augment=t_args["use_augment"])
-        t_args["model_args"]["exp_dir"] = mt.exp_dir
-        mt.model, mt.callbacks_list, mt.epochs_done = get_EfficientNetB0(t_args)
-        mt.info()
-
-        predictions = mt.predict(
-            fdl.x_test_patches, overwrite=t_args["overwrite_preds"]
+        exp_dir = os.path.join(
+            t_args["exp_base_dir"], t_args["model_args"]["exp_name"], fold_dir
         )
 
-        hm = Heatmaps(exp_dir=mt.exp_dir)
+        preds_file = os.path.join(exp_dir, "preds.csv")
+        if t_args["overwrite_preds"] or not os.path.exists(preds_file):
+            mt = ModelTrainer(
+                exp_dir=exp_dir,
+                data_dir=os.path.join(t_args["model_args"]["data_dir"], fold_dir),
+                model_args=t_args["model_args"],
+                model_params=t_args["model_params"],
+            )
+            mt.load_dataset(use_augment=t_args["use_augment"])
+            t_args["model_args"]["exp_dir"] = mt.exp_dir
+            mt.model, mt.callbacks_list, mt.epochs_done = get_EfficientNetB0(t_args)
+            mt.info()
+
+            predictions = mt.predict(
+                fdl.x_test_patches, overwrite=t_args["overwrite_preds"]
+            )
+        else:
+            predictions = np.loadtxt(preds_file, delimiter=",")
+
+        hm = Heatmaps(exp_dir)
         hm.save(
             save_dir=os.path.join(hm.exp_dir, "heatmaps"),
             slides_annot=fdl.x_test_annot,

@@ -17,13 +17,23 @@ from tqdm import tqdm
 
 class ModelTrainer:
     def __init__(
-        self, exp_base_dir, exp_name, data_dir, model_args, model_params, seed=42
+        self,
+        exp_base_dir=None,
+        exp_name=None,
+        exp_dir=None,
+        data_dir=None,
+        model_args=None,
+        model_params=None,
+        seed=42,
     ):
         self.seed = seed
         tf.random.set_seed(seed)
         os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
         tf.keras.backend.clear_session()
-        self.exp_dir = os.path.join(exp_base_dir, exp_name)
+        if exp_dir is not None:
+            self.exp_dir = exp_dir
+        else:
+            self.exp_dir = os.path.join(exp_base_dir, exp_name)
         os.makedirs(self.exp_dir, exist_ok=True)
         self.data_dir = data_dir
         self.model_args = model_args
