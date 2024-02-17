@@ -40,7 +40,7 @@ if __name__ == "__main__":
         fdl.patches_info()
         fdl.patches_split_info()
         fdl.segregate_patches()
-        fdl.perform_augmentation()
+        fdl.perform_augmentation(use_augment=args["use_augment"])
         fdl.augment_info()
         fdl.save_patches()
         if args["create_zip"]:
