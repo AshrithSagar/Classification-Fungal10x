@@ -176,7 +176,6 @@ class Heatmaps:
             plt.clf()
             plt.imshow(heatmap)
 
-            label_ch = "F" if label == 0 else "N"
-            filename = f"{label_ch}_{os.path.splitext(slide_name)[0]}.{save_ext}"
+            filename = f"{os.path.splitext(slide_name)[0]}_heatmap.{save_ext}"
             heatmap_path = os.path.join(self.save_dir, filename)
             plt.savefig(heatmap_path)
