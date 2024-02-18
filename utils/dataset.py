@@ -79,8 +79,8 @@ class FungalDataLoader:
             )
 
             self.x_train_slide_names, self.x_val_slide_names = (
-                self.x_names[train_idx],
-                self.x_names[val_idx],
+                np.asarray(self.x_names)[train_idx],
+                np.asarray(self.x_names)[val_idx],
             )
 
             self.x_train_annot, self.x_val_annot = (
