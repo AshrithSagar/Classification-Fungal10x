@@ -300,7 +300,7 @@ class ModelSummary:
         print("Folds:", folds)
         print(mean_std_df)
 
-        mean_std_df.to_csv(os.path.join(self.exp_dir, "cv_results.csv"), index=False)
+        mean_std_df.to_csv(os.path.join(self.exp_dir, "cv_results.csv"), index=True)
 
     def get_fold_results(self, folds=None):
         if folds is None:
@@ -319,4 +319,4 @@ class ModelSummary:
                 self.results.append(yaml.load(infile, Loader=yaml.FullLoader))
 
         results_df = pd.DataFrame(self.results)
-        results_df.to_csv(os.path.join(self.exp_dir, "fold_results.csv"), index=False)
+        results_df.to_csv(os.path.join(self.exp_dir, "fold_results.csv"), index=True)
