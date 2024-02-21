@@ -11,6 +11,8 @@ from PIL import Image
 import tensorflow as tf
 from sklearn.model_selection import train_test_split, StratifiedKFold
 
+line_separator = "\u2500" * 50
+
 
 class FungalDataLoader:
     def __init__(self, data_dir_name, slide_dir, annot_dir, seed=42):
@@ -20,7 +22,6 @@ class FungalDataLoader:
         self.annot_dir = annot_dir
         self.slide_dims = (1200, 1600)
         tf.random.set_seed(seed)
-        os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
         os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 
     def load_slides(self):
@@ -102,6 +103,7 @@ class FungalDataLoader:
         print("Training slides:", slides_split_verbose(self.y_train_slides))
         print("Validation slides:", slides_split_verbose(self.y_val_slides))
         print("Test slides:", slides_split_verbose(self.y_test_slides))
+        print(line_separator)
 
     def segregate_slides(self):
         def segregate(slides, labels, slide_names=None):
@@ -158,11 +160,10 @@ class FungalDataLoader:
 
         data_dir = f"dataset/{self.data_dir_name}-slides"
         os.makedirs(data_dir, exist_ok=True)
-        print(data_dir)
 
         save_dir = os.path.join(data_dir, f"fold_{self.fold}")
         os.makedirs(save_dir, exist_ok=True)
-        print(save_dir)
+        print(f"Saving slides: {save_dir}")
 
         save(
             save_dir,
@@ -207,6 +208,8 @@ class FungalDataLoader:
             self.x_test_slide_names_nonfungal,
         )
 
+        print(line_separator)
+
     def downsample_slides(self, size=None, factor=None, preserve_aspect_ratio=True):
         def downsample(slides):
             return tf.image.resize(
@@ -230,6 +233,7 @@ class FungalDataLoader:
         self.x_val_annot = downsample(self.x_val_annot)
         self.x_test_annot = downsample(self.x_test_annot)
         print(f"Downsampled to size: {self.downsample_size}")
+        print(line_separator)
 
     def extract_patches(self, size=(224, 224), overlap=0.5):
         def get_patches(dataset):
@@ -290,6 +294,7 @@ class FungalDataLoader:
         )
 
         self.annot_patches_labels, _ = get_annot(self.annot_dataset_patches)
+        print(line_separator)
 
     def verify_annotations(self):
         nonfungal_indices = [
@@ -305,15 +310,17 @@ class FungalDataLoader:
         ).intersection(nonfungal_indices)
 
         print(f"Annot True: {np.count_nonzero(annot_slides_check == True)};")
-        print(f"Should be {np.count_nonzero(self.slide_labels == True)})")
+        print(f"Should be {np.count_nonzero(self.slide_labels == True)}")
 
         print(f"Annot False: {np.count_nonzero(annot_slides_check == False)};")
-        print(f"Should be {np.count_nonzero(self.slide_labels == False)})")
+        print(f"Should be {np.count_nonzero(self.slide_labels == False)}")
 
         print(f"Wrongly labelled slide annotations: {wrong_labels_slide_annot}")
 
         print("Wrongly labelled slide annotations indices:")
         print(wrong_labels_slide_annot_indices, end=", ")
+        print()
+        print(line_separator)
 
     def filter_patch_annotations(self):
         def filter_patch_annot(y_slides, x_patch_labels):
@@ -393,6 +400,7 @@ class FungalDataLoader:
         print("Training patches:", patches_split_verbose(self.y_train))
         print("Validation patches:", patches_split_verbose(self.y_val))
         print("Test patches:", patches_split_verbose(self.y_test))
+        print(line_separator)
 
     def segregate_patches(self):
         def segregate(dataset, labels):
@@ -472,6 +480,7 @@ class FungalDataLoader:
         print(augment_verbose(self.x_train_fungal, self.x_train_fungal_augmented))
         print("Train nonfungal patches")
         print(augment_verbose(self.x_train_nonfungal, self.x_train_nonfungal_augmented))
+        print(line_separator)
 
     def save_patches(self):
         def save(data_dir, sub_dir, dataset, labels, save_ext="png"):
@@ -507,22 +516,22 @@ class FungalDataLoader:
 
         self.data_dir = f"dataset/{self.data_dir_name}-{self.downsample_size[0]}_{self.downsample_size[1]}"
         os.makedirs(self.data_dir, exist_ok=True)
-        print(self.data_dir)
 
         save_dir = os.path.join(self.data_dir, f"fold_{self.fold}")
         os.makedirs(save_dir, exist_ok=True)
-        print(save_dir)
+        print(f"Saving patches: {save_dir}")
 
         save2(save_dir, "train", "fungal", self.x_train_fungal_augmented)
         save2(save_dir, "train", "nonfungal", self.x_train_nonfungal_augmented)
         save(save_dir, "train_unaugmented", self.x_train, self.y_train)
         save(save_dir, "val", self.x_val, self.y_val)
         save(save_dir, "test", self.x_test, self.y_test)
+        print(line_separator)
 
     def zip_data_dir(self, data_dir=None, sub_dir=None):
         def zip(data_dir):
             zip_name = os.path.basename(os.path.normpath(data_dir))
-            print(zip_name)
+            print(f"Zipping {zip_name}")
 
             if not sub_dir:
                 # ZIP entire data_set folder
@@ -533,6 +542,7 @@ class FungalDataLoader:
                 shutil.make_archive(zip_name, "zip", sub_dir_path)
 
         zip(data_dir or self.data_dir)
+        print(line_separator)
 
     def dataset_info(self, data_dir=None):
         def dir_info(data_dir):
@@ -556,3 +566,4 @@ class FungalDataLoader:
         df_dir_info = pd.DataFrame.from_dict(dir_info, orient="index")
         df_dir_info["total"] = df_dir_info["nonfungal"] + df_dir_info["fungal"]
         print(df_dir_info)
+        print(line_separator)

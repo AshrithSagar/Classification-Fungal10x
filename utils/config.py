@@ -6,6 +6,8 @@ import os
 import yaml
 import tensorflow as tf
 
+line_separator = "\u2500" * 50
+
 
 def load_config(config_file="config.yaml", key=None):
     with open(config_file, "r") as file:
@@ -38,3 +40,4 @@ class GPUHandler:
             set_device(f"/gpu:{device_index}")
         else:
             print("Invalid device index provided.")
+        print(line_separator)
