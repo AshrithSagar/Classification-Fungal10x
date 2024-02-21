@@ -11,11 +11,12 @@ from utils.trainer import ModelSummary
 
 
 if __name__ == "__main__":
-    args = load_config(config_file="config.yaml", key="trainer")
+    h_args = load_config(config_file="config.yaml", key="heatmaps")
+    t_args = load_config(config_file="config.yaml", key="trainer")
 
     ms = ModelSummary(
-        exp_base_dir=args["exp_base_dir"],
-        exp_name=args["model_args"]["exp_name"],
+        exp_base_dir=t_args["exp_base_dir"],
+        exp_name=t_args["model_args"]["exp_name"],
     )
-    ms.get_cv_results(folds=args["folds"])
-    ms.get_results(heatmaps=args["save_dir"], folds=args["folds"])
+    ms.get_cv_results(folds=t_args["folds"])
+    ms.get_results(heatmaps=h_args["save_dir"], folds=t_args["folds"])
