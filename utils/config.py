@@ -26,18 +26,15 @@ class GPUHandler:
         print(tf.config.list_physical_devices())
 
     def set(self, device_index):
-        if device_index == -1:
-            os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+        def set_device(device_name):
             tf.config.set_visible_devices([], "GPU")
-            print("Selecting CPU")
-            return
+            with tf.device(device_name):
+                print(f"Selecting device: {device_name}")
+                tf.constant(0)
 
-        physical_devices = tf.config.list_physical_devices("GPU")
-        if physical_devices:
-            tf.config.set_visible_devices(physical_devices[device_index], "GPU")
-            tf.config.experimental.set_memory_growth(
-                physical_devices[device_index], True
-            )
-            print(f"Selecting GPU: {physical_devices[device_index]}")
+        if device_index == -1:  # Use CPU
+            set_device("/cpu:0")
+        elif device_index >= 0:  # Use GPU
+            set_device(f"/gpu:{device_index}")
         else:
-            print("No GPU devices found.")
+            print("Invalid device index provided.")

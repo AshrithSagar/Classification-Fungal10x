@@ -5,8 +5,6 @@ create_dataset.py
 import os
 import sys
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
-
 sys.path.append(os.getcwd())
 from utils.config import GPUHandler, load_config
 from utils.dataset import FungalDataLoader
@@ -17,6 +15,7 @@ if __name__ == "__main__":
 
     gpu = GPUHandler()
     gpu.check()
+    gpu.set(-1)
 
     fdl = FungalDataLoader(
         args["data_dir_name"],
