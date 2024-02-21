@@ -419,5 +419,5 @@ class ModelSummary:
                 for filename in os.listdir(heatmap_dir):
                     zipf.write(
                         os.path.join(heatmap_dir, filename),
-                        arcname=os.path.join(fold, filename),
+                        arcname=os.path.join(fold, heatmaps, filename),
                     )
