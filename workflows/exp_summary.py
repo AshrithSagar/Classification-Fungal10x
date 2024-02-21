@@ -18,5 +18,4 @@ if __name__ == "__main__":
         exp_base_dir=t_args["exp_base_dir"],
         exp_name=t_args["model_args"]["exp_name"],
     )
-    ms.get_cv_results(folds=t_args["folds"])
     ms.get_results(heatmaps=h_args["save_dir"], folds=t_args["folds"])

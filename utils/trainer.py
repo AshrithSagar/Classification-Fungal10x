@@ -393,15 +393,21 @@ class ModelSummary:
 
     def get_results(self, heatmaps="heatmaps", folds=None):
         self.check_folds(folds)
+        self.get_cv_results(folds)
 
         zip_file_path = os.path.join(
             self.exp_dir, f"{os.path.basename(self.exp_dir)}_results.zip"
         )
         with zipfile.ZipFile(zip_file_path, "w") as zipf:
+            # Metrics
+            metrics = ["cv_results.csv", "fold_results.csv"]
+            for filename in metrics:
+                zipf.write(os.path.join(self.exp_dir, filename))
+
             for fold in self.folds:
                 fold_dir = os.path.join(self.exp_dir, fold)
                 heatmap_dir = os.path.join(fold_dir, heatmaps)
-                filenames = [
+                plots = [
                     "confusion_matrix.jpeg",
                     "model_accuracy.jpeg",
                     "model_loss.jpeg",
@@ -409,7 +415,7 @@ class ModelSummary:
                 ]
 
                 # Plots
-                for filename in filenames:
+                for filename in plots:
                     zipf.write(
                         os.path.join(fold_dir, filename),
                         arcname=os.path.join(fold, filename),
