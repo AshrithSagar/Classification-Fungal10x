@@ -324,18 +324,22 @@ class ModelSummary:
                 self.results.append(yaml.load(infile, Loader=yaml.FullLoader))
 
         results = []
+        columns = [
+            "ROC",
+            "training_time",
+            "epochs",
+            "converging",
+            "train_accuracy",
+            "val_accuracy",
+            "test_accuracy",
+            "f1-score",
+            "precision",
+            "recall",
+        ]
         for fold_result in self.results:
             metrics = []
             classification_report_metrics = ["f1-score", "precision", "recall"]
-            for metric in [
-                "ROC",
-                "training_time",
-                "epochs",
-                "converging",
-                "train_accuracy",
-                "val_accuracy",
-                "test_accuracy",
-            ] + classification_report_metrics:
+            for metric in columns:
                 if metric == "train_accuracy":
                     value = fold_result["model_accuracy"]["train"]
                 elif metric == "val_accuracy":
@@ -349,7 +353,7 @@ class ModelSummary:
                 metrics.append(value)
             results.append(metrics)
 
-        results_df = pd.DataFrame(results)
+        results_df = pd.DataFrame(results, columns=columns)
         print("Folds:", self.folds)
         print(results_df)
 
