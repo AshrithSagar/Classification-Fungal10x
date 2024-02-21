@@ -330,7 +330,7 @@ class ModelSummary:
         self.check_folds(folds)
 
         zip_file_path = os.path.join(
-            self.exp_dir, f"{os.path.basename(self.exp_dir)}.zip"
+            self.exp_dir, f"{os.path.basename(self.exp_dir)}_plots.zip"
         )
         with zipfile.ZipFile(zip_file_path, "w") as zipf:
             for fold in self.folds:
