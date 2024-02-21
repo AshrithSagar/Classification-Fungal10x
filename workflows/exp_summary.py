@@ -18,5 +18,4 @@ if __name__ == "__main__":
         exp_name=args["model_args"]["exp_name"],
     )
     ms.get_cv_results(folds=args["folds"])
-    ms.get_plots(folds=args["folds"])
-    ms.get_heatmaps(folder="heatmaps", folds=args["folds"])
+    ms.get_results(heatmaps="heatmaps", folds=args["folds"])
