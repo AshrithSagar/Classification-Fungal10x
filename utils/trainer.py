@@ -261,14 +261,14 @@ class ModelSummary:
 
     def check_folds(self, folds=None):
         if folds is None:
-            folds = [
+            self.folds = [
                 fold_dir
                 for fold_dir in os.listdir(self.exp_dir)
                 if os.path.isdir(fold_dir)
             ]
         else:
-            folds = [f"fold_{i}" for i in folds]
-        return folds
+            self.folds = [f"fold_{i}" for i in folds]
+        return self.folds
 
     def get_cv_results(self, folds=None):
         self.get_fold_results(folds)
@@ -309,7 +309,7 @@ class ModelSummary:
             mean_std_metrics[metric] = {"mean": mean, "std": std}
 
         mean_std_df = pd.DataFrame(mean_std_metrics).T
-        print("Folds:", folds)
+        print("Folds:", self.folds)
         print(mean_std_df)
 
         mean_std_df.to_csv(os.path.join(self.exp_dir, "cv_results.csv"), index=True)
@@ -318,7 +318,7 @@ class ModelSummary:
         self.check_folds(folds)
 
         self.results = []
-        for fold in folds:
+        for fold in self.folds:
             results_file = os.path.join(self.exp_dir, fold, "results.yaml")
             with open(results_file, "r") as infile:
                 self.results.append(yaml.load(infile, Loader=yaml.FullLoader))
@@ -333,7 +333,7 @@ class ModelSummary:
             self.exp_dir, f"{os.path.basename(self.exp_dir)}.zip"
         )
         with zipfile.ZipFile(zip_file_path, "w") as zipf:
-            for fold in folds:
+            for fold in self.folds:
                 fold_dir = os.path.join(self.exp_dir, fold)
                 filenames = [
                     "confusion_matrix.jpeg",
