@@ -390,3 +390,34 @@ class ModelSummary:
                 for filename in os.listdir(heatmap_dir):
                     file = os.path.join(heatmap_dir, filename)
                     zipf.write(file, arcname=os.path.join(fold, filename))
+
+    def get_results(self, heatmaps="heatmaps", folds=None):
+        self.check_folds(folds)
+
+        zip_file_path = os.path.join(
+            self.exp_dir, f"{os.path.basename(self.exp_dir)}_results.zip"
+        )
+        with zipfile.ZipFile(zip_file_path, "w") as zipf:
+            for fold in self.folds:
+                fold_dir = os.path.join(self.exp_dir, fold)
+                heatmap_dir = os.path.join(fold_dir, heatmaps)
+                filenames = [
+                    "confusion_matrix.jpeg",
+                    "model_accuracy.jpeg",
+                    "model_loss.jpeg",
+                    "roc_curve.jpeg",
+                ]
+
+                # Plots
+                for filename in filenames:
+                    zipf.write(
+                        os.path.join(fold_dir, filename),
+                        arcname=os.path.join(fold, filename),
+                    )
+
+                # Heatmaps
+                for filename in os.listdir(heatmap_dir):
+                    zipf.write(
+                        os.path.join(heatmap_dir, filename),
+                        arcname=os.path.join(fold, filename),
+                    )
