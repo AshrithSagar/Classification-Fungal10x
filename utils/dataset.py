@@ -111,12 +111,13 @@ class FungalDataLoader:
             f_imgs = tf.gather(slides, f_idx)
             nf_imgs = tf.gather(slides, nf_idx)
 
-            if slide_names:
+            if slide_names is not None:
+                slide_names = np.asarray(slide_names)
                 f_slide_names = slide_names[f_idx]
                 nf_slide_names = slide_names[nf_idx]
                 return f_imgs, nf_imgs, f_slide_names, nf_slide_names
             else:
-                return f_imgs, nf_imgs
+                return f_imgs, nf_imgs, None, None
 
         datasets = [
             (
@@ -138,7 +139,7 @@ class FungalDataLoader:
             )
             setattr(self, f"x_{dataset_type}_slides_fungal", f_imgs)
             setattr(self, f"x_{dataset_type}_slides_nonfungal", nf_imgs)
-            if slide_names:
+            if slide_names is not None:
                 setattr(self, f"x_{dataset_type}_slide_names_fungal", f_slide_names)
                 setattr(self, f"x_{dataset_type}_slide_names_nonfungal", nf_slide_names)
 

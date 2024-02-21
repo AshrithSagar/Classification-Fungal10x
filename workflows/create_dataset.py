@@ -25,7 +25,7 @@ if __name__ == "__main__":
     )
     fdl.load_slides()
     fdl.create_splits()
-    for fold in fdl.create_kfold_splits():
+    for fold in fdl.create_kfold_splits(n_splits=args["n_splits"]):
         fdl.split_info()
         fdl.segregate_slides()
         fdl.save_slides()

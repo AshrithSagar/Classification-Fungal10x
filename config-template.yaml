@@ -5,6 +5,7 @@ dataset:
   data_dir_name: null
   downsample_factor: null
   downsample_size: null
+  n_splits: null
   slide_dir: null
   use_augment: null
 heatmaps:
