@@ -402,7 +402,10 @@ class ModelSummary:
             # Metrics
             metrics = ["cv_results.csv", "fold_results.csv"]
             for filename in metrics:
-                zipf.write(os.path.join(self.exp_dir, filename))
+                zipf.write(
+                    os.path.join(self.exp_dir, filename),
+                    arcname=filename,
+                )
 
             for fold in self.folds:
                 fold_dir = os.path.join(self.exp_dir, fold)
