@@ -17,4 +17,5 @@ if __name__ == "__main__":
         exp_base_dir=args["exp_base_dir"],
         exp_name=args["model_args"]["exp_name"],
     )
-    results = ms.get_cv_results(folds=args["folds"])
+    ms.get_cv_results(folds=args["folds"])
+    ms.get_plots(folds=args["folds"])
