@@ -19,3 +19,4 @@ if __name__ == "__main__":
     )
     ms.get_cv_results(folds=args["folds"])
     ms.get_plots(folds=args["folds"])
+    ms.get_heatmaps(folder="heatmaps", folds=args["folds"])

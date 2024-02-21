@@ -377,3 +377,16 @@ class ModelSummary:
                 for filename in filenames:
                     file = os.path.join(fold_dir, filename)
                     zipf.write(file, arcname=os.path.join(fold, filename))
+
+    def get_heatmaps(self, folder="heatmaps", folds=None):
+        self.check_folds(folds)
+
+        zip_file_path = os.path.join(
+            self.exp_dir, f"{os.path.basename(self.exp_dir)}_heatmaps.zip"
+        )
+        with zipfile.ZipFile(zip_file_path, "w") as zipf:
+            for fold in self.folds:
+                heatmap_dir = os.path.join(self.exp_dir, fold, folder)
+                for filename in os.listdir(heatmap_dir):
+                    file = os.path.join(heatmap_dir, filename)
+                    zipf.write(file, arcname=os.path.join(fold, filename))
