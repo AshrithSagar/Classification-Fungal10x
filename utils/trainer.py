@@ -323,7 +323,36 @@ class ModelSummary:
             with open(results_file, "r") as infile:
                 self.results.append(yaml.load(infile, Loader=yaml.FullLoader))
 
-        results_df = pd.DataFrame(self.results)
+        results = []
+        for fold_result in self.results:
+            metrics = {}
+            classification_report_metrics = ["f1-score", "precision", "recall"]
+            for metric in [
+                "ROC",
+                "training_time",
+                "epochs",
+                "converging",
+                "train_accuracy",
+                "val_accuracy",
+                "test_accuracy",
+            ] + classification_report_metrics:
+                if metric == "train_accuracy":
+                    value = fold_result["model_accuracy"]["train"]
+                elif metric == "val_accuracy":
+                    value = fold_result["model_accuracy"]["val"]
+                elif metric == "test_accuracy":
+                    value = fold_result["model_accuracy"]["test"]
+                elif metric in classification_report_metrics:
+                    value = fold_result["classification_report"]["0"][metric]
+                else:
+                    value = fold_result[metric]
+                metrics[metric] = {"metric": metric, "value": value}
+            results.append(metrics)
+
+        results_df = pd.DataFrame(results)
+        print("Folds:", self.folds)
+        print(results_df)
+
         results_df.to_csv(os.path.join(self.exp_dir, "fold_results.csv"), index=True)
 
     def get_plots(self, folds=None):
