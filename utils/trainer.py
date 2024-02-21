@@ -4,6 +4,7 @@ trainer.py
 
 import os
 import time
+import zipfile
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -258,8 +259,19 @@ class ModelSummary:
     def __init__(self, exp_base_dir, exp_name):
         self.exp_dir = os.path.join(exp_base_dir, exp_name)
 
+    def check_folds(self, folds=None):
+        if folds is None:
+            folds = [
+                fold_dir
+                for fold_dir in os.listdir(self.exp_dir)
+                if os.path.isdir(fold_dir)
+            ]
+        else:
+            folds = [f"fold_{i}" for i in folds]
+        return folds
+
     def get_cv_results(self, folds=None):
-        self.get_fold_results(folds=folds)
+        self.get_fold_results(folds)
 
         mean_std_metrics = {}
         classification_report_metrics = ["f1-score", "precision", "recall"]
@@ -303,14 +315,7 @@ class ModelSummary:
         mean_std_df.to_csv(os.path.join(self.exp_dir, "cv_results.csv"), index=True)
 
     def get_fold_results(self, folds=None):
-        if folds is None:
-            folds = [
-                fold_dir
-                for fold_dir in os.listdir(self.exp_dir)
-                if os.path.isdir(fold_dir)
-            ]
-        else:
-            folds = [f"fold_{i}" for i in folds]
+        self.check_folds(folds)
 
         self.results = []
         for fold in folds:
@@ -320,3 +325,22 @@ class ModelSummary:
 
         results_df = pd.DataFrame(self.results)
         results_df.to_csv(os.path.join(self.exp_dir, "fold_results.csv"), index=True)
+
+    def get_plots(self, folds=None):
+        self.check_folds(folds)
+
+        zip_file_path = os.path.join(
+            self.exp_dir, f"{os.path.basename(self.exp_dir)}.zip"
+        )
+        with zipfile.ZipFile(zip_file_path, "w") as zipf:
+            for fold in folds:
+                fold_dir = os.path.join(self.exp_dir, fold)
+                filenames = [
+                    "confusion_matrix.jpeg",
+                    "model_accuracy.jpeg",
+                    "model_loss.jpeg",
+                    "roc_curve.jpeg",
+                ]
+                for filename in filenames:
+                    file = os.path.join(fold_dir, filename)
+                    zipf.write(file, arcname=os.path.join(fold, filename))
