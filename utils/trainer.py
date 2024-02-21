@@ -325,7 +325,7 @@ class ModelSummary:
 
         results = []
         for fold_result in self.results:
-            metrics = {}
+            metrics = []
             classification_report_metrics = ["f1-score", "precision", "recall"]
             for metric in [
                 "ROC",
@@ -346,7 +346,7 @@ class ModelSummary:
                     value = fold_result["classification_report"]["0"][metric]
                 else:
                     value = fold_result[metric]
-                metrics[metric] = {"metric": metric, "value": value}
+                metrics.append(value)
             results.append(metrics)
 
         results_df = pd.DataFrame(results)
