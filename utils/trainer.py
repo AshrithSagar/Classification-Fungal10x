@@ -259,23 +259,7 @@ class ModelSummary:
         self.exp_dir = os.path.join(exp_base_dir, exp_name)
 
     def get_cv_results(self, folds=None):
-        if folds is None:
-            folds = [
-                fold_dir
-                for fold_dir in os.listdir(self.exp_dir)
-                if os.path.isdir(fold_dir)
-            ]
-        else:
-            folds = [f"fold_{i}" for i in folds]
-
-        self.results = []
-        for fold in folds:
-            results_file = os.path.join(self.exp_dir, fold, "results.yaml")
-            with open(results_file, "r") as infile:
-                self.results.append(yaml.load(infile, Loader=yaml.FullLoader))
-
-        results_df = pd.DataFrame(self.results)
-        results_df.to_csv(os.path.join(self.exp_dir, "cv_results.csv"), index=False)
+        self.get_fold_results(folds=folds)
 
         mean_std_metrics = {}
         classification_report_metrics = ["f1-score", "precision", "recall"]
@@ -316,4 +300,23 @@ class ModelSummary:
         print("Folds:", folds)
         print(mean_std_df)
 
-        return self.results
+        mean_std_df.to_csv(os.path.join(self.exp_dir, "cv_results.csv"), index=False)
+
+    def get_fold_results(self, folds=None):
+        if folds is None:
+            folds = [
+                fold_dir
+                for fold_dir in os.listdir(self.exp_dir)
+                if os.path.isdir(fold_dir)
+            ]
+        else:
+            folds = [f"fold_{i}" for i in folds]
+
+        self.results = []
+        for fold in folds:
+            results_file = os.path.join(self.exp_dir, fold, "results.yaml")
+            with open(results_file, "r") as infile:
+                self.results.append(yaml.load(infile, Loader=yaml.FullLoader))
+
+        results_df = pd.DataFrame(self.results)
+        results_df.to_csv(os.path.join(self.exp_dir, "fold_results.csv"), index=False)
