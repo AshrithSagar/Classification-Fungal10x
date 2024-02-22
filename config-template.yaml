@@ -6,6 +6,7 @@ dataset:
   downsample_factor: null
   downsample_size: null
   n_splits: null
+  save_slides: null
   slide_dir: null
   use_augment: null
 heatmaps:

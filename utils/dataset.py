@@ -51,57 +51,26 @@ class FungalDataLoader:
                 stratify=labels,
             )
 
-        self.x_slides, self.x_test_slides, self.y_slides, self.y_test_slides = split(
-            self.slide_dataset, self.slide_labels
-        )
-        self.x_names, self.x_test_slide_names, self.y_names, _ = split(
+        (
+            self.x_train_slides,
+            self.x_test_slides,
+            self.y_train_slides,
+            self.y_test_slides,
+        ) = split(self.slide_dataset, self.slide_labels)
+
+        self.x_train_names, self.x_test_slide_names, self.y_train_names, _ = split(
             self.slide_names, self.slide_labels
         )
-        self.x_annot, self.x_test_annot, self.y_annot, self.y_test_annot = split(
-            self.annot_dataset, self.slide_labels
+
+        self.x_train_annot, self.x_test_annot, self.y_train_annot, self.y_test_annot = (
+            split(self.annot_dataset, self.slide_labels)
         )
-
-    def create_kfold_splits(self, n_splits=5, run_only=None):
-        kfold = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=self.seed)
-
-        for self.fold, (train_idx, val_idx) in enumerate(
-            kfold.split(self.x_slides, self.y_slides)
-        ):
-            if run_only and self.fold not in run_only:
-                continue
-
-            self.x_train_slides, self.x_val_slides = (
-                self.x_slides[train_idx],
-                self.x_slides[val_idx],
-            )
-            self.y_train_slides, self.y_val_slides = (
-                self.y_slides[train_idx],
-                self.y_slides[val_idx],
-            )
-
-            self.x_train_slide_names, self.x_val_slide_names = (
-                np.asarray(self.x_names)[train_idx],
-                np.asarray(self.x_names)[val_idx],
-            )
-
-            self.x_train_annot, self.x_val_annot = (
-                self.x_annot[train_idx],
-                self.x_annot[val_idx],
-            )
-            self.y_train_annot, self.y_val_annot = (
-                self.y_annot[train_idx],
-                self.y_annot[val_idx],
-            )
-
-            self.split_info()
-            yield self.x_train_slides, self.y_train_slides, self.x_val_slides, self.y_val_slides
 
     def split_info(self):
         slides_split_verbose = (
             lambda x: f"{x.shape[0]} (F:{int(np.sum(x))}, NF:{int(len(x) - np.sum(x))})"
         )
         print("Training slides:", slides_split_verbose(self.y_train_slides))
-        print("Validation slides:", slides_split_verbose(self.y_val_slides))
         print("Test slides:", slides_split_verbose(self.y_test_slides))
         print(line_separator)
 
@@ -122,16 +91,9 @@ class FungalDataLoader:
                 return f_imgs, nf_imgs, None, None
 
         datasets = [
-            (
-                self.x_train_slides,
-                self.y_train_slides,
-                self.x_train_slide_names,
-                "train",
-            ),
-            (self.x_val_slides, self.y_val_slides, self.x_val_slide_names, "val"),
+            (self.x_train_slides, self.y_train_slides, self.x_train_names, "train"),
             (self.x_test_slides, self.y_test_slides, self.x_test_slide_names, "test"),
             (self.x_train_annot, self.y_train_annot, None, "train"),
-            (self.x_val_annot, self.y_val_annot, None, "val"),
             (self.x_test_annot, self.y_test_annot, None, "test"),
         ]
 
@@ -158,10 +120,7 @@ class FungalDataLoader:
                 pil_img = Image.fromarray((img.numpy() * 1).astype(np.uint8))
                 pil_img.save(img_file)
 
-        data_dir = f"dataset/{self.data_dir_name}-slides"
-        os.makedirs(data_dir, exist_ok=True)
-
-        save_dir = os.path.join(data_dir, f"fold_{self.fold}")
+        save_dir = f"dataset/{self.data_dir_name}-slides"
         os.makedirs(save_dir, exist_ok=True)
         print(f"Saving slides: {save_dir}")
 
@@ -178,20 +137,6 @@ class FungalDataLoader:
             "nonfungal",
             self.x_train_slides_nonfungal,
             self.x_train_slide_names_nonfungal,
-        )
-        save(
-            save_dir,
-            "val",
-            "fungal",
-            self.x_val_slides_fungal,
-            self.x_val_slide_names_fungal,
-        )
-        save(
-            save_dir,
-            "val",
-            "nonfungal",
-            self.x_val_slides_nonfungal,
-            self.x_val_slide_names_nonfungal,
         )
         save(
             save_dir,
@@ -227,10 +172,8 @@ class FungalDataLoader:
             raise ValueError("Either size or downsample factor must be provided.")
 
         self.x_train_slides = downsample(self.x_train_slides)
-        self.x_val_slides = downsample(self.x_val_slides)
         self.x_test_slides = downsample(self.x_test_slides)
         self.x_train_annot = downsample(self.x_train_annot)
-        self.x_val_annot = downsample(self.x_val_annot)
         self.x_test_annot = downsample(self.x_test_annot)
         print(f"Downsampled to size: {self.downsample_size}")
         print(line_separator)
@@ -255,10 +198,8 @@ class FungalDataLoader:
         self.patch_dims = size
         stride = tuple(int(s * (1 - overlap)) for s in self.patch_dims)
         self.x_train_patches, _ = get_patches(self.x_train_slides)
-        self.x_val_patches, _ = get_patches(self.x_val_slides)
         self.x_test_patches, self.patches_shape = get_patches(self.x_test_slides)
         self.x_train_annot_patches, _ = get_patches(self.x_train_annot)
-        self.x_val_annot_patches, _ = get_patches(self.x_val_annot)
         self.x_test_annot_patches, _ = get_patches(self.x_test_annot)
         self.annot_dataset_patches, _ = get_patches(self.annot_dataset)
 
@@ -285,9 +226,6 @@ class FungalDataLoader:
 
         self.x_train_patch_labels, self.x_train_patches_annot = get_annot(
             self.x_train_annot_patches,
-        )
-        self.x_val_patch_labels, self.x_val_patches_annot = get_annot(
-            self.x_val_annot_patches,
         )
         self.x_test_patch_labels, self.x_test_patches_annot = get_annot(
             self.x_test_annot_patches,
@@ -337,29 +275,17 @@ class FungalDataLoader:
         self.x_train_patches_filtermask, self.y_train_patches = filter_patch_annot(
             self.y_train_slides, self.x_train_patch_labels
         )
-        self.x_val_patches_filtermask, self.y_val_patches = filter_patch_annot(
-            self.y_val_slides, self.x_val_patch_labels
-        )
         self.x_test_patches_filtermask, self.y_test_patches = filter_patch_annot(
             self.y_test_slides, self.x_test_patch_labels
         )
 
-        self.x_train = tf.boolean_mask(
+        self.x_train_patches = tf.boolean_mask(
             self.x_train_patches,
             self.x_train_patches_filtermask,
         )
-        self.y_train = tf.boolean_mask(
+        self.y_train_patches = tf.boolean_mask(
             self.y_train_patches,
             self.x_train_patches_filtermask,
-        )
-
-        self.x_val = tf.boolean_mask(
-            self.x_val_patches,
-            self.x_val_patches_filtermask,
-        )
-        self.y_val = tf.boolean_mask(
-            self.y_val_patches,
-            self.x_val_patches_filtermask,
         )
 
         self.x_test = tf.boolean_mask(
@@ -386,21 +312,11 @@ class FungalDataLoader:
 
         info = [
             ("Train", self.x_train_patches_filtermask, self.x_train_patch_labels),
-            ("Validation", self.x_val_patches_filtermask, self.x_val_patch_labels),
             ("Test", self.x_test_patches_filtermask, self.x_test_patch_labels),
         ]
         for name, filtermask, patch_labels in info:
             print(name, patches_verbose(True, filtermask, patch_labels))
             print(name, patches_verbose(False, filtermask, patch_labels))
-
-    def patches_split_info(self):
-        patches_split_verbose = (
-            lambda x: f"{x.shape[0]} (F:{int(np.sum(x == 1))}, NF:{int(np.sum(x == 0))})"
-        )
-        print("Training patches:", patches_split_verbose(self.y_train))
-        print("Validation patches:", patches_split_verbose(self.y_val))
-        print("Test patches:", patches_split_verbose(self.y_test))
-        print(line_separator)
 
     def segregate_patches(self):
         def segregate(dataset, labels):
@@ -412,22 +328,12 @@ class FungalDataLoader:
 
             return f_imgs, nf_imgs
 
-        self.x_train_fungal, self.x_train_nonfungal = segregate(
-            self.x_train, self.y_train
+        self.x_train_patches_fungal, self.x_train_patches_nonfungal = segregate(
+            self.x_train_patches, self.y_train_patches
         )
 
-    def perform_augmentation(self, use_augment=True):
+    def perform_augmentation(self, transformations=None, use_augment=True):
         def augment_image(image):
-            # List of all possible transformations. Original image is included by default
-            transformations = [
-                lambda x: tf.image.flip_left_right(x),
-                lambda x: tf.image.flip_up_down(x),
-                lambda x: tf.image.flip_up_down(tf.image.flip_left_right(x)),
-                lambda x: tf.image.rot90(x, k=1),  # 90 degree
-                lambda x: tf.image.rot90(x, k=2),  # 180 degree
-                lambda x: tf.image.rot90(x, k=3),  # 270 degree
-            ]
-
             aug_images = [transform(image) for transform in transformations]
             aug_dataset = tf.convert_to_tensor(aug_images)
             return aug_dataset
@@ -459,27 +365,93 @@ class FungalDataLoader:
             train_aug = tf.random.shuffle(train_aug, seed=self.seed)
             return train_aug
 
-        # Take all original images for x_train_fungal and fill up the augmentations for x_train_nonfungal
-        if not use_augment:
-            self.x_train_fungal_augmented = self.x_train_fungal
-            self.x_train_nonfungal_augmented = self.x_train_nonfungal
-            return
+        # List of all possible transformations. Original image is included by default
+        if transformations is None:
+            transformations = [
+                lambda x: tf.image.flip_left_right(x),
+                lambda x: tf.image.flip_up_down(x),
+                lambda x: tf.image.flip_up_down(tf.image.flip_left_right(x)),
+                lambda x: tf.image.rot90(x, k=1),  # 90 degree
+                lambda x: tf.image.rot90(x, k=2),  # 180 degree
+                lambda x: tf.image.rot90(x, k=3),  # 270 degree
+            ]
 
-        self.x_train_fungal_augmented = augment_dataset(
-            self.x_train_fungal,
-            target_count=-1,
+        # Take all original images for x_train_fungal and fill up the augmentations for x_train_nonfungal
+        if use_augment:
+            self.x_train_patches_fungal_augmented = augment_dataset(
+                self.x_train_patches_fungal,
+                target_count=-1,
+            )
+            self.x_train_patches_nonfungal_augmented = augment_dataset(
+                self.x_train_patches_nonfungal,
+                target_count=len(self.x_train_patches_fungal_augmented),
+            )
+        else:
+            self.x_train_patches_fungal_augmented = self.x_train_patches_fungal
+            self.x_train_patches_nonfungal_augmented = self.x_train_patches_nonfungal
+
+        self.x_train_patches = tf.concat(
+            [
+                self.x_train_patches_fungal_augmented,
+                self.x_train_patches_nonfungal_augmented,
+            ],
+            axis=0,
         )
-        self.x_train_nonfungal_augmented = augment_dataset(
-            self.x_train_nonfungal,
-            target_count=len(self.x_train_fungal_augmented),
+
+        self.y_train_patches = np.concatenate(
+            [
+                tf.ones((len(self.x_train_patches_fungal_augmented),), dtype=tf.int32),
+                tf.zeros(
+                    (len(self.x_train_patches_nonfungal_augmented),), dtype=tf.int32
+                ),
+            ],
+            axis=0,
         )
 
     def augment_info(self):
         augment_verbose = lambda x, y: f"{x.shape[0]} => {y.shape[0]}"
         print("Train fungal patches:")
-        print(augment_verbose(self.x_train_fungal, self.x_train_fungal_augmented))
+        print(
+            augment_verbose(
+                self.x_train_patches_fungal, self.x_train_patches_fungal_augmented
+            )
+        )
         print("Train nonfungal patches")
-        print(augment_verbose(self.x_train_nonfungal, self.x_train_nonfungal_augmented))
+        print(
+            augment_verbose(
+                self.x_train_patches_nonfungal, self.x_train_patches_nonfungal_augmented
+            )
+        )
+        print(line_separator)
+
+    def create_kfold_splits(self, n_splits=5, run_only=None):
+        kfold = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=self.seed)
+
+        for self.fold, (train_idx, val_idx) in enumerate(
+            kfold.split(self.x_train_patches, self.y_train_patches)
+        ):
+            if run_only and self.fold not in run_only:
+                continue
+
+            self.x_train, self.x_val = (
+                tf.gather(self.x_train_patches, train_idx),
+                tf.gather(self.x_train_patches, val_idx),
+            )
+            self.y_train, self.y_val = (
+                tf.gather(self.y_train_patches, train_idx),
+                tf.gather(self.y_train_patches, val_idx),
+            )
+
+            self.patches_split_info()
+            yield self.x_train, self.y_train, self.x_val, self.y_val
+
+    def patches_split_info(self):
+        patches_split_verbose = (
+            lambda x: f"{x.shape[0]} (F:{int(np.sum(x == 1))}, NF:{int(np.sum(x == 0))})"
+        )
+        print("Training patches:", patches_split_verbose(self.y_train))
+        print("Validation patches:", patches_split_verbose(self.y_val))
+        print("Test patches:", patches_split_verbose(self.y_test))
         print(line_separator)
 
     def save_patches(self):
@@ -521,9 +493,7 @@ class FungalDataLoader:
         os.makedirs(save_dir, exist_ok=True)
         print(f"Saving patches: {save_dir}")
 
-        save2(save_dir, "train", "fungal", self.x_train_fungal_augmented)
-        save2(save_dir, "train", "nonfungal", self.x_train_nonfungal_augmented)
-        save(save_dir, "train_unaugmented", self.x_train, self.y_train)
+        save(save_dir, "train", self.x_train, self.y_train)
         save(save_dir, "val", self.x_val, self.y_val)
         save(save_dir, "test", self.x_test, self.y_test)
         print(line_separator)
