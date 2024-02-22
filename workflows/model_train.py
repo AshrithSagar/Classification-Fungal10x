@@ -17,6 +17,7 @@ if __name__ == "__main__":
     gpu = GPUHandler()
     gpu.check()
     gpu.set(device_index=args["gpu"])
+    gpu.check()
 
     for fold in args["folds"]:
         fold_dir = f"fold_{fold}"

@@ -24,8 +24,15 @@ class GPUHandler:
         pass
 
     def check(self):
-        print("GPU:", "Enabled" if tf.test.gpu_device_name() else "Disabled")
-        print(tf.config.list_physical_devices())
+        devices = tf.config.list_physical_devices()
+        print("Devices:", devices)
+
+        gpu_devices = tf.config.list_physical_devices("GPU")
+        if gpu_devices:
+            print("TensorFlow can use GPU")
+            print("GPU Device Name:", tf.test.gpu_device_name())
+        else:
+            print("TensorFlow cannot use GPU; GPU Disabled")
 
     def set(self, device_index):
         def set_device(device_name):
