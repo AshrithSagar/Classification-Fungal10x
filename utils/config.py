@@ -29,22 +29,29 @@ class GPUHandler:
 
         gpu_devices = tf.config.list_physical_devices("GPU")
         if gpu_devices:
-            print("TensorFlow can use GPU")
+            print("GPU: Enabled;", gpu_devices)
             print("GPU Device Name:", tf.test.gpu_device_name())
         else:
-            print("TensorFlow cannot use GPU; GPU Disabled")
+            print("GPU: Disabled;")
 
     def set(self, device_index):
-        def set_device(device_name):
-            tf.config.set_visible_devices([], "GPU")
-            with tf.device(device_name):
-                print(f"Selecting device: {device_name}")
-                tf.constant(0)
-
         if device_index == -1:  # Use CPU
-            set_device("/cpu:0")
+            os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+            tf.config.set_visible_devices([], "GPU")
+            tf.device("/cpu:0")
         elif device_index >= 0:  # Use GPU
-            set_device(f"/gpu:{device_index}")
+            physical_devices = tf.config.list_physical_devices("GPU")
+            if physical_devices:
+                try:
+                    tf.config.set_visible_devices(physical_devices[device_index], "GPU")
+                    tf.config.experimental.set_memory_growth(
+                        physical_devices[device_index], True
+                    )
+                    print(f"Selecting device: {physical_devices[device_index]}")
+                except RuntimeError as e:
+                    print(e)
+            else:
+                print("No GPU devices found.")
         else:
             print("Invalid device index provided.")
         print(line_separator)
