@@ -62,9 +62,12 @@ class FungalDataLoader:
             self.slide_names, self.slide_labels
         )
 
-        self.x_train_annot, self.x_test_annot, self.y_train_annot, self.y_test_annot = (
-            split(self.annot_dataset, self.slide_labels)
-        )
+        (
+            self.x_train_annot,
+            self.x_test_annot,
+            self.y_train_annot,
+            self.y_test_annot,
+        ) = split(self.annot_dataset, self.slide_labels)
 
     def split_info(self):
         slides_split_verbose = (
