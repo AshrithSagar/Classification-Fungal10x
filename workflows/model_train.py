@@ -8,6 +8,7 @@ import sys
 sys.path.append(os.getcwd())
 from utils.config import GPUHandler, load_config
 from utils.trainer import ModelTrainer
+from models.clamSB_tf import CLAM_SB
 from models.EfficientNetB0 import get_EfficientNetB0
 
 
@@ -33,7 +34,16 @@ if __name__ == "__main__":
         )
         mt.load_dataset(use_augment=args["use_augment"])
         args["model_args"]["exp_dir"] = mt.exp_dir
-        mt.model, mt.callbacks_list, mt.epochs_done = get_EfficientNetB0(args)
+
+        if args["model"] == "CLAM_SB":
+            mt.model = CLAM_SB(args["model-CLAM_SB"])
+        elif args["model"] == "EfficientNetB0":
+            mt.model, mt.callbacks_list, mt.epochs_done = get_EfficientNetB0(
+                args["model-EfficientNetB0"]
+            )
+        else:
+            raise ValueError("Invalid model")
+
         mt.info()
         mt.train()
         mt.evaluate()

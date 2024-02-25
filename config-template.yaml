@@ -22,16 +22,20 @@ trainer:
   exp_base_dir: null
   folds: null
   gpu: null
-  model_args:
-    batch_size: null
-    data_dir: null
-    exp_dir: null
-    exp_name: null
-    max_epochs: null
-  model_params:
-    freeze_ratio: null
-    learning_rate: null
-    patience: null
-    start_from_epoch: null
+  model: null
+  model-CLAM_SB:
+    k_sample: null
+  model-EfficientNetB0:
+    model_args:
+      batch_size: null
+      data_dir: null
+      exp_dir: null
+      exp_name: null
+      max_epochs: null
+    model_params:
+      freeze_ratio: null
+      learning_rate: null
+      patience: null
+      start_from_epoch: null
   overwrite_preds: null
   use_augment: null
