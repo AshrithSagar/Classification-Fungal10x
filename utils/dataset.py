@@ -4,14 +4,17 @@ dataset.py
 
 import os
 import shutil
+import sys
+
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
-from PIL import Image
 import tensorflow as tf
-from sklearn.model_selection import train_test_split, StratifiedKFold
+from PIL import Image
+from sklearn.model_selection import StratifiedKFold, train_test_split
+from tqdm import tqdm
 
-line_separator = "\u2500" * 50
+sys.path.append(os.getcwd())
+from utils.config import line_separator
 
 
 class FungalDataLoader:
