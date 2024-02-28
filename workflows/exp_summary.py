@@ -16,6 +16,6 @@ if __name__ == "__main__":
 
     ms = ModelSummary(
         exp_base_dir=t_args["exp_base_dir"],
-        exp_name=t_args["model_args"]["exp_name"],
+        exp_name=t_args["model-EfficientNetB0"]["model_args"]["exp_name"],
     )
     ms.get_results(heatmaps=h_args["save_dir"], folds=t_args["folds"])
