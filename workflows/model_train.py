@@ -37,12 +37,15 @@ if __name__ == "__main__":
         args["model_args"]["exp_dir"] = mt.exp_dir
 
         if args["model"] == "CLAM_SB":
+            args["model-CLAM_SB"]["model_args"]["exp_dir"] = mt.exp_dir
             mt.model = CLAM_SB(args["model-CLAM_SB"])
         elif args["model"] == "EfficientNetB0":
+            args["model-EfficientNetB0"]["model_args"]["exp_dir"] = mt.exp_dir
             mt.model, mt.callbacks_list, mt.epochs_done = get_EfficientNetB0(
                 args["model-EfficientNetB0"]
             )
         elif args["model"] == "ResNet50":
+            args["model-ResNet50"]["model_args"]["exp_dir"] = mt.exp_dir
             mt.model, mt.callbacks_list, mt.epochs_done = get_ResNet50(
                 args["model-ResNet50"]
             )
