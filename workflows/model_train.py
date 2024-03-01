@@ -10,6 +10,7 @@ from utils.config import GPUHandler, load_config
 from utils.trainer import ModelTrainer
 from models.clamSB_tf import CLAM_SB
 from models.EfficientNetB0 import get_EfficientNetB0
+from models.ResNet50 import get_ResNet50
 
 
 if __name__ == "__main__":
@@ -40,6 +41,10 @@ if __name__ == "__main__":
         elif args["model"] == "EfficientNetB0":
             mt.model, mt.callbacks_list, mt.epochs_done = get_EfficientNetB0(
                 args["model-EfficientNetB0"]
+            )
+        elif args["model"] == "ResNet50":
+            mt.model, mt.callbacks_list, mt.epochs_done = get_ResNet50(
+                args["model-ResNet50"]
             )
         else:
             raise ValueError("Invalid model")
