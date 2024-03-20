@@ -1,0 +1,11 @@
+matplotlib
+numpy
+opencv-python
+pandas
+pillow
+scikit-learn
+scipy
+seaborn
+tensorflow==2.9.1
+tqdm
+yaml
