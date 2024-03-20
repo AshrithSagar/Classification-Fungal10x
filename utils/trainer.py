@@ -13,6 +13,7 @@ import seaborn as sns
 import tensorflow as tf
 import yaml
 from sklearn.metrics import classification_report, roc_auc_score, roc_curve
+from tensorflow.keras.callbacks import Callback
 from tqdm import tqdm
 
 
@@ -77,12 +78,14 @@ class ModelTrainer:
             self.model.summary(print_fn=lambda x: f.write(x + "\n"))
 
     def train(self):
+        epoch_time_callback = EpochTimeCallback()
+
         tic = time.time()
         history = self.model.fit(
             self.train_ds,
             validation_data=self.val_ds,
             verbose=1,
-            callbacks=self.callbacks_list,
+            callbacks=[epoch_time_callback] + self.callbacks_list,
             initial_epoch=self.epochs_done,
             epochs=self.model_args["max_epochs"],
         )
@@ -96,6 +99,11 @@ class ModelTrainer:
         )
         time_taken = toc - tic
         self.results.update({"training_time": format_time(time_taken)})
+
+        epoch_times = np.array(epoch_time_callback.epoch_times)
+        formatted_epoch_times = [format_time(epoch) for epoch in epoch_times]
+        epoch_times_path = os.path.join(self.exp_dir, "epoch_times.txt")
+        np.savetxt(epoch_times_path, formatted_epoch_times, fmt="%s")
 
         self.results.update({"converging": None})
 
@@ -430,3 +438,19 @@ class ModelSummary:
                         os.path.join(heatmap_dir, filename),
                         arcname=os.path.join(fold, heatmaps, filename),
                     )
+
+
+class EpochTimeCallback(Callback):
+    """A custom callback to log the time taken for each epoch."""
+
+    def __init__(self):
+        super().__init__()
+        self.epoch_times = []
+
+    def on_epoch_begin(self, epoch, logs=None):
+        self.start_time = time.time()
+
+    def on_epoch_end(self, epoch, logs=None):
+        end_time = time.time()
+        epoch_time = end_time - self.start_time
+        self.epoch_times.append(epoch_time)
