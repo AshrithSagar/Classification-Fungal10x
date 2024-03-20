@@ -457,9 +457,17 @@ class LogCallback(Callback):
 
     def __init__(self, csv_logger_path, tensorboard_log_dir):
         super().__init__()
-        self.csv_logger_path = csv_logger_path
-        self.tensorboard_log_dir = tensorboard_log_dir
         self.epoch_times = []
+        self.csv_logger = None
+        self.tensorboard = None
+        if csv_logger_path:
+            self.csv_logger = CSVLogger(
+                filename=csv_logger_path, separator=",", append=True
+            )
+        if tensorboard_log_dir:
+            self.tensorboard = TensorBoard(
+                log_dir=tensorboard_log_dir, histogram_freq=1
+            )
 
     def on_epoch_begin(self, epoch, logs=None):
         self.start_time = time.time()
@@ -470,13 +478,7 @@ class LogCallback(Callback):
         self.epoch_times.append(epoch_time)
         logs = logs or {}
         logs.update({"epoch_time": epoch_time})
-        if self.csv_logger_path:
-            csv_logger = CSVLogger(
-                filename=self.csv_logger_path, separator=",", append=True
-            )
-            csv_logger.on_epoch_end(epoch, logs)
-        if self.tensorboard_log_dir:
-            tensorboard = TensorBoard(
-                log_dir=self.tensorboard_log_dir, histogram_freq=1
-            )
-            tensorboard.on_epoch_end(epoch, logs)
+        if self.csv_logger:
+            self.csv_logger.on_epoch_end(epoch, logs)
+        if self.tensorboard:
+            self.tensorboard.on_epoch_end(epoch, logs)
