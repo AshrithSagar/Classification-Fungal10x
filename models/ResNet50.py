@@ -38,10 +38,6 @@ def get_ResNet50(args):
         args["model_args"]["exp_dir"], "resnet50-model.h5"
     )
     csv_logger_path = os.path.join(args["model_args"]["exp_dir"], "csv_logger.csv")
-    log_dir = os.path.join(
-        args["model_args"]["exp_dir"],
-        "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S"),
-    )
 
     resnet = ResNet50(
         include_top=False, weights="imagenet", input_shape=(224, 224, 3), pooling="max"
@@ -86,12 +82,6 @@ def get_ResNet50(args):
             mode="min",
             min_lr=1e-8,
         ),
-        callbacks.CSVLogger(
-            filename=csv_logger_path,
-            separator=",",
-            append=True,
-        ),
-        callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1),
         callbacks.EarlyStopping(
             monitor="val_loss",
             mode="min",

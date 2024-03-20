@@ -2,6 +2,7 @@
 trainer.py
 """
 
+import datetime
 import os
 import time
 import zipfile
@@ -13,7 +14,7 @@ import seaborn as sns
 import tensorflow as tf
 import yaml
 from sklearn.metrics import classification_report, roc_auc_score, roc_curve
-from tensorflow.keras.callbacks import Callback
+from tensorflow.keras.callbacks import Callback, CSVLogger, TensorBoard
 from tqdm import tqdm
 
 
@@ -78,14 +79,20 @@ class ModelTrainer:
             self.model.summary(print_fn=lambda x: f.write(x + "\n"))
 
     def train(self):
-        epoch_time_callback = EpochTimeCallback()
+        log_callback = LogCallback(
+            csv_logger_path=os.path.join(self.exp_dir, "csv_logger.csv"),
+            tensorboard_log_dir=os.path.join(
+                self.exp_dir,
+                "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S"),
+            ),
+        )
 
         tic = time.time()
         history = self.model.fit(
             self.train_ds,
             validation_data=self.val_ds,
             verbose=1,
-            callbacks=[epoch_time_callback] + self.callbacks_list,
+            callbacks=[log_callback] + self.callbacks_list,
             initial_epoch=self.epochs_done,
             epochs=self.model_args["max_epochs"],
         )
@@ -100,7 +107,7 @@ class ModelTrainer:
         time_taken = toc - tic
         self.results.update({"training_time": format_time(time_taken)})
 
-        epoch_times = np.array(epoch_time_callback.epoch_times)
+        epoch_times = np.array(log_callback.epoch_times)
         formatted_epoch_times = [format_time(epoch) for epoch in epoch_times]
         epoch_times_path = os.path.join(self.exp_dir, "epoch_times.txt")
         np.savetxt(epoch_times_path, formatted_epoch_times, fmt="%s")
@@ -440,11 +447,20 @@ class ModelSummary:
                     )
 
 
-class EpochTimeCallback(Callback):
-    """A custom callback to log the time taken for each epoch."""
+class LogCallback(Callback):
+    """
+    A custom callback to log
+    - CSVLogger
+    - TensorBoard
+    - Time taken for each epoch
+    """
 
-    def __init__(self):
+    def __init__(self, csv_logger_path, tensorboard_log_dir):
         super().__init__()
+        self.csv_logger = CSVLogger(
+            filename=csv_logger_path, separator=",", append=True
+        )
+        self.tensorboard = TensorBoard(log_dir=tensorboard_log_dir, histogram_freq=1)
         self.epoch_times = []
 
     def on_epoch_begin(self, epoch, logs=None):
@@ -454,3 +470,7 @@ class EpochTimeCallback(Callback):
         end_time = time.time()
         epoch_time = end_time - self.start_time
         self.epoch_times.append(epoch_time)
+        logs = logs or {}
+        logs.update({"epoch_time": epoch_time})
+        self.csv_logger.on_epoch_end(epoch, logs)
+        self.tensorboard.on_epoch_end(epoch, logs)
