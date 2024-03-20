@@ -3,9 +3,9 @@ numpy
 opencv-python
 pandas
 pillow
+pyyaml
 scikit-learn
 scipy
 seaborn
 tensorflow==2.9.1
 tqdm
-yaml
