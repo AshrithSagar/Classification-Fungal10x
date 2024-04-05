@@ -6,11 +6,9 @@ import os
 import sys
 
 sys.path.append(os.getcwd())
+from models.model import get_model
 from utils.config import GPUHandler, load_config
 from utils.trainer import ModelTrainer
-from models.clamSB_tf import CLAM_SB
-from models.EfficientNetB0 import get_EfficientNetB0
-from models.ResNet50 import get_ResNet50
 
 
 if __name__ == "__main__":
@@ -36,22 +34,7 @@ if __name__ == "__main__":
         mt.load_dataset(t_args["subset_size"], t_args["use_augment"])
         t_args["model_args"]["exp_dir"] = mt.exp_dir
 
-        if t_args["model"] == "CLAM_SB":
-            t_args["model-CLAM_SB"]["model_args"]["exp_dir"] = mt.exp_dir
-            mt.model = CLAM_SB(t_args["model-CLAM_SB"])
-        elif t_args["model"] == "EfficientNetB0":
-            t_args["model-EfficientNetB0"]["model_args"]["exp_dir"] = mt.exp_dir
-            mt.model, mt.callbacks_list, mt.epochs_done = get_EfficientNetB0(
-                t_args["model-EfficientNetB0"]
-            )
-        elif t_args["model"] == "ResNet50":
-            t_args["model-ResNet50"]["model_args"]["exp_dir"] = mt.exp_dir
-            mt.model, mt.callbacks_list, mt.epochs_done = get_ResNet50(
-                t_args["model-ResNet50"]
-            )
-        else:
-            raise ValueError("Invalid model")
-
+        mt = get_model(mt, t_args)
         mt.info()
         mt.train()
         mt.evaluate()
