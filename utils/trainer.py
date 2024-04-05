@@ -121,7 +121,8 @@ class ModelTrainer:
         epoch_times = np.array(epoch_time_callback.epoch_times)
         formatted_epoch_times = [format_time(epoch) for epoch in epoch_times]
         epoch_times_path = os.path.join(self.exp_dir, "epoch_times.txt")
-        np.savetxt(epoch_times_path, formatted_epoch_times, fmt="%s")
+        with open(epoch_times_path, "a") as f:
+            f.write("\n".join(formatted_epoch_times) + "\n")
 
         self.results.update({"converging": None})
 
