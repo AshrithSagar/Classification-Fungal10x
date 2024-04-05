@@ -26,26 +26,26 @@ if __name__ == "__main__":
 
         mt = ModelTrainer(
             exp_base_dir=os.path.join(
-                t_args["exp_base_dir"], t_args["model_t_args"]["exp_name"]
+                t_args["exp_base_dir"], t_args["model_args"]["exp_name"]
             ),
             exp_name=fold_dir,
-            data_dir=os.path.join(t_args["model_t_args"]["data_dir"], fold_dir),
-            model_t_args=t_args["model_t_args"],
+            data_dir=os.path.join(t_args["model_args"]["data_dir"], fold_dir),
+            model_args=t_args["model_args"],
             model_params=t_args["model_params"],
         )
-        mt.load_dataset(use_augment=t_args["use_augment"])
-        t_args["model_t_args"]["exp_dir"] = mt.exp_dir
+        mt.load_dataset(t_args["subset_size"], t_args["use_augment"])
+        t_args["model_args"]["exp_dir"] = mt.exp_dir
 
         if t_args["model"] == "CLAM_SB":
-            t_args["model-CLAM_SB"]["model_t_args"]["exp_dir"] = mt.exp_dir
+            t_args["model-CLAM_SB"]["model_args"]["exp_dir"] = mt.exp_dir
             mt.model = CLAM_SB(t_args["model-CLAM_SB"])
         elif t_args["model"] == "EfficientNetB0":
-            t_args["model-EfficientNetB0"]["model_t_args"]["exp_dir"] = mt.exp_dir
+            t_args["model-EfficientNetB0"]["model_args"]["exp_dir"] = mt.exp_dir
             mt.model, mt.callbacks_list, mt.epochs_done = get_EfficientNetB0(
                 t_args["model-EfficientNetB0"]
             )
         elif t_args["model"] == "ResNet50":
-            t_args["model-ResNet50"]["model_t_args"]["exp_dir"] = mt.exp_dir
+            t_args["model-ResNet50"]["model_args"]["exp_dir"] = mt.exp_dir
             mt.model, mt.callbacks_list, mt.epochs_done = get_ResNet50(
                 t_args["model-ResNet50"]
             )

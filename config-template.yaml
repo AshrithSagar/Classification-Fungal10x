@@ -61,4 +61,5 @@ trainer:
     patience: null
     start_from_epoch: null
   overwrite_preds: null
+  subset_size: null
   use_augment: null

@@ -44,7 +44,7 @@ class ModelTrainer:
         self.model = None
         self.results = {}
 
-    def load_dataset(self, use_augment=False):
+    def load_dataset(self, subset_size=None, use_augment=False):
         train_ds_dir = "train_unaugmented" if not use_augment else "train"
         self.train_ds = tf.keras.preprocessing.image_dataset_from_directory(
             os.path.join(self.data_dir, train_ds_dir),
@@ -67,10 +67,28 @@ class ModelTrainer:
             batch_size=self.model_args["batch_size"],
             image_size=self.image_dims,
         )
+        self.class_names = self.train_ds.class_names
+        self.train_ds = self.train_ds.prefetch(tf.data.experimental.AUTOTUNE)
+
+        if subset_size:
+            self.train_ds = (
+                self.train_ds.unbatch()
+                .take(subset_size)
+                .batch(self.model_args["batch_size"])
+            )
+            self.val_ds = (
+                self.val_ds.unbatch()
+                .take(subset_size)
+                .batch(self.model_args["batch_size"])
+            )
+            self.test_ds = (
+                self.test_ds.unbatch()
+                .take(subset_size)
+                .batch(self.model_args["batch_size"])
+            )
 
     def info(self):
-        class_names = self.train_ds.class_names
-        print(class_names)
+        print(f"Classes: {self.class_names}")
 
         self.model.summary()
         model_summary_file = os.path.join(self.exp_dir, "model_summary.txt")
