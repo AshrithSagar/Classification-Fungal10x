@@ -7,8 +7,8 @@ import sys
 
 sys.path.append(os.getcwd())
 import numpy as np
-from models.EfficientNetB0 import get_EfficientNetB0
 
+from models.model import get_model
 from utils.config import GPUHandler, load_config
 from utils.dataset import FungalDataLoader
 from utils.heatmaps import Heatmaps
@@ -56,7 +56,7 @@ if __name__ == "__main__":
             )
             mt.load_dataset(use_augment=t_args["use_augment"])
             t_args["model_args"]["exp_dir"] = mt.exp_dir
-            mt.model, mt.callbacks_list, mt.epochs_done = get_EfficientNetB0(t_args)
+            mt = get_model(mt, t_args)
             mt.info()
 
             predictions = mt.predict(
