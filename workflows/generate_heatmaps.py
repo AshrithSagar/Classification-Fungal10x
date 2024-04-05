@@ -25,7 +25,6 @@ if __name__ == "__main__":
     gpu.set(device_index=t_args["gpu"])
 
     fdl = FungalDataLoader(
-        d_args["data_dir_name"],
         d_args["slide_dir"],
         d_args["annot_dir"],
     )

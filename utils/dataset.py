@@ -18,11 +18,11 @@ from utils.config import line_separator
 
 
 class FungalDataLoader:
-    def __init__(self, data_dir_name, slide_dir, annot_dir, seed=42):
+    def __init__(self, slide_dir, annot_dir, data_dir_name=None, seed=42):
         self.seed = seed
-        self.data_dir_name = data_dir_name
         self.slide_dir = slide_dir
         self.annot_dir = annot_dir
+        self.data_dir_name = data_dir_name
         self.slide_dims = (1200, 1600)
         tf.random.set_seed(seed)
         os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
@@ -125,6 +125,9 @@ class FungalDataLoader:
                 )
                 pil_img = Image.fromarray((img.numpy() * 1).astype(np.uint8))
                 pil_img.save(img_file)
+
+        if self.data_dir_name is None:
+            raise ValueError("Please provide a data_dir_name to save at")
 
         save_dir = f"dataset/{self.data_dir_name}-slides"
         os.makedirs(save_dir, exist_ok=True)
@@ -491,6 +494,9 @@ class FungalDataLoader:
                 img_file = os.path.join(sub_dir, label, f"{idx:04}.{save_ext}")
                 pil_img = Image.fromarray((img.numpy() * 1).astype(np.uint8))
                 pil_img.save(img_file)
+
+        if self.data_dir_name is None:
+            raise ValueError("Please provide a data_dir_name to save at")
 
         self.data_dir = f"dataset/{self.data_dir_name}-{self.downsample_size[0]}_{self.downsample_size[1]}"
         os.makedirs(self.data_dir, exist_ok=True)

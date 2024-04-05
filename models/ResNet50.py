@@ -43,16 +43,11 @@ def get_ResNet50(args):
         "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S"),
     )
 
-    resnet = ResNet50(
+    base_model = ResNet50(
         include_top=False, weights="imagenet", input_shape=(224, 224, 3), pooling="max"
     )
 
-    output = resnet.layers[-1].output
-    output = tf.keras.layers.Flatten()(output)
-    resnet = Model(resnet.input, output)
-    num_classes = 1
-
-    base_model = freeze_layers(resnet, args["model_params"]["freeze_ratio"])
+    base_model = freeze_layers(base_model, args["model_params"]["freeze_ratio"])
 
     model = models.Sequential()
     model.add(layers.Rescaling(1.0 / 255))
@@ -61,7 +56,7 @@ def get_ResNet50(args):
     model.add(Dropout(0.5))
     model.add(Dense(1024, activation="relu"))
     model.add(Dropout(0.5))
-    model.add(Dense(num_classes, activation="sigmoid"))
+    model.add(Dense(1, activation="sigmoid"))
 
     model.compile(
         loss="binary_crossentropy",
