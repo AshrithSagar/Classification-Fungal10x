@@ -3,6 +3,7 @@ trainer.py
 """
 
 import os
+import sys
 import time
 import zipfile
 
@@ -15,6 +16,9 @@ import yaml
 from sklearn.metrics import classification_report, roc_auc_score, roc_curve
 from tensorflow.keras.callbacks import Callback
 from tqdm import tqdm
+
+sys.path.append(os.getcwd())
+from utils.config import line_separator
 
 
 class ModelTrainer:
@@ -86,6 +90,7 @@ class ModelTrainer:
                 .take(subset_size)
                 .batch(self.model_args["batch_size"])
             )
+            print(f"Using subset of data for training of size: {subset_size}")
 
     def info(self):
         print(f"Classes: {self.class_names}")
@@ -133,6 +138,7 @@ class ModelTrainer:
         self.results.update({"epochs": total_epochs})
         print("Epochs trained in current run:", epochs, end="; ")
         print("Epochs trained in total:", total_epochs)
+        print(line_separator)
 
     def evaluate(self):
         def get_accuracy_plot(show_plots=False):
@@ -144,8 +150,7 @@ class ModelTrainer:
             plt.xlabel("epoch")
             plt.legend(["train", "val"], loc="upper left")
             plt.savefig(os.path.join(self.exp_dir, "model_accuracy.jpeg"), dpi=150)
-            if show_plots:
-                plt.show()
+            plt.show() if show_plots else plt.close()
 
         def get_loss_plot(show_plots=False):
             plt.clf()
@@ -156,11 +161,12 @@ class ModelTrainer:
             plt.xlabel("epoch")
             plt.legend(["train", "val"], loc="upper left")
             plt.savefig(os.path.join(self.exp_dir, "model_loss.jpeg"), dpi=150)
-            if show_plots:
-                plt.show()
+            plt.show() if show_plots else plt.close()
 
         def get_classification_report():
             print(classification_report(self.y_test, self.y_pred, zero_division=np.nan))
+            print(line_separator)
+
             self.results.update(
                 {
                     "classification_report": classification_report(
@@ -188,8 +194,7 @@ class ModelTrainer:
             plt.xlabel("Predicted label")
             save_file = os.path.join(self.exp_dir, "confusion_matrix.jpeg")
             plt.savefig(save_file, dpi=150)
-            if show_plots:
-                plt.show()
+            plt.show() if show_plots else plt.close()
 
         def get_roc_curve(show_plots=False):
             ns_probs = np.zeros(len(self.y_test))
@@ -197,6 +202,7 @@ class ModelTrainer:
             lr_auc = roc_auc_score(self.y_test, self.y_pred)
             print("No Skill: ROC AUC=%.3f" % (ns_auc))
             print("efficientnet: ROC AUC=%.3f" % (lr_auc))
+            print(line_separator)
 
             ns_fpr, ns_tpr, _ = roc_curve(self.y_test, ns_probs)
             lr_fpr, lr_tpr, _ = roc_curve(self.y_test, self.y_pred)
@@ -209,8 +215,7 @@ class ModelTrainer:
             plt.legend(loc="lower right")
             save_file = os.path.join(self.exp_dir, "roc_curve.jpeg")
             plt.savefig(save_file, dpi=150)
-            if show_plots:
-                plt.show()
+            plt.show() if show_plots else plt.close()
 
             self.results.update({"ROC": float(lr_auc)})
 
@@ -221,9 +226,11 @@ class ModelTrainer:
         accuracy_verbose = (
             lambda data_set, acc: f"Model accuracy on {data_set} data: {acc * 100}"
         )
+        print(line_separator)
         print(accuracy_verbose("train", train_acc))
         print(accuracy_verbose("val", val_acc))
         print(accuracy_verbose("test", test_acc))
+        print(line_separator)
 
         self.results.update(
             {

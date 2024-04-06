@@ -3,6 +3,7 @@ heatmaps.py
 """
 
 import os
+import sys
 
 import cv2
 import matplotlib.pyplot as plt
@@ -11,8 +12,10 @@ import tensorflow as tf
 from matplotlib.colors import Normalize
 from PIL import Image
 from scipy.stats import percentileofscore
-from tensorflow import keras
 from tqdm import tqdm
+
+sys.path.append(os.getcwd())
+from utils.config import line_separator
 
 
 class Heatmaps:
@@ -179,3 +182,5 @@ class Heatmaps:
             filename = f"{os.path.splitext(slide_name)[0]}_heatmap.{save_ext}"
             heatmap_path = os.path.join(self.save_dir, filename)
             plt.savefig(heatmap_path)
+            plt.close()
+        print(line_separator)
