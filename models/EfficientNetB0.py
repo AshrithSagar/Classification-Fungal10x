@@ -2,32 +2,17 @@
 EfficientNetB0 model
 """
 
-import os
 import datetime
+import os
+import sys
+
 import pandas as pd
 import tensorflow as tf
-from tensorflow.keras import layers, models, callbacks
+from tensorflow.keras import callbacks, layers, models
 from tensorflow.keras.applications import EfficientNetB0
 
-
-def freeze_layers(model, freeze, verbose=True):
-    """
-    freeze: Ratio in which to freeze the first few layers
-    """
-    model.trainable = True
-
-    freeze_upto = round(freeze * len(model.layers))
-    train_rest = len(model.layers) - freeze_upto
-
-    for layer in model.layers[:freeze_upto]:
-        layer.trainable = False
-    for layer in model.layers[train_rest:]:
-        layer.trainable = True
-
-    if verbose:
-        print(f"{freeze_upto} layers freezed; {train_rest} layers trainable")
-
-    return model
+sys.path.append(os.getcwd())
+from models.model import freeze_layers
 
 
 def get_EfficientNetB0(args):
