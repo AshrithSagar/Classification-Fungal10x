@@ -16,13 +16,14 @@ from utils.trainer import ModelTrainer
 
 
 if __name__ == "__main__":
+    g_args = load_config(config_file="config.yaml", key="gpu")
     d_args = load_config(config_file="config.yaml", key="dataset")
     t_args = load_config(config_file="config.yaml", key="trainer")
     h_args = load_config(config_file="config.yaml", key="heatmaps")
 
     gpu = GPUHandler()
     gpu.check()
-    gpu.set(device_index=t_args["gpu"])
+    gpu.set(device_index=g_args["device_index"])
 
     fdl = FungalDataLoader(
         d_args["slide_dir"],

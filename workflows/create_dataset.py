@@ -12,11 +12,12 @@ from utils.config import GPUHandler, load_config
 from utils.dataset import FungalDataLoader
 
 if __name__ == "__main__":
+    g_args = load_config(config_file="config.yaml", key="gpu")
     d_args = load_config(config_file="config.yaml", key="dataset")
 
     gpu = GPUHandler()
     gpu.check()
-    gpu.set(device_index=-1)
+    gpu.set(device_index=g_args["device_index"])
 
     fdl = FungalDataLoader(
         d_args["slide_dir"],
