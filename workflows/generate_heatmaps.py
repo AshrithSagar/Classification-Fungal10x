@@ -54,7 +54,7 @@ if __name__ == "__main__":
                 model_args=t_args["model_args"],
                 model_params=t_args["model_params"],
             )
-            mt.load_dataset(use_augment=t_args["use_augment"])
+            mt.load_dataset(t_args["subset_size"], t_args["use_augment"])
             t_args["model_args"]["exp_dir"] = mt.exp_dir
             mt = get_model(mt, t_args)
             mt.info()
