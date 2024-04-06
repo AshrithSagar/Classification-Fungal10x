@@ -13,6 +13,7 @@ heatmaps:
   alpha: null
   blur: null
   cmap: null
+  file_extension: null
   overlap: null
   patch_size: null
   percentile_scale: null

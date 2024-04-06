@@ -80,4 +80,5 @@ if __name__ == "__main__":
             percentile_score=h_args["percentile_score"],
             alpha=h_args["alpha"],
             blur=h_args["blur"],
+            save_ext=h_args["file_extension"],
         )
