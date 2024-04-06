@@ -8,10 +8,7 @@ import sys
 
 import pandas as pd
 import tensorflow as tf
-from tensorflow.keras import callbacks, layers, models
-from tensorflow.keras.applications.resnet50 import ResNet50
-from tensorflow.keras.layers import Dense, Dropout
-from tensorflow.keras.models import Model
+from tensorflow import keras
 
 sys.path.append(os.getcwd())
 from models.model import freeze_layers
@@ -27,20 +24,20 @@ def get_ResNet50(args):
         "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S"),
     )
 
-    base_model = ResNet50(
+    base_model = tf.keras.applications.resnet50.ResNet50(
         include_top=False, weights="imagenet", input_shape=(224, 224, 3), pooling="max"
     )
 
     base_model = freeze_layers(base_model, args["model_params"]["freeze_ratio"])
 
-    model = models.Sequential()
-    model.add(layers.Rescaling(1.0 / 255))
+    model = keras.models.Sequential()
+    model.add(keras.layers.Rescaling(1.0 / 255))
     model.add(base_model)
-    model.add(Dense(1024, activation="relu"))
-    model.add(Dropout(0.5))
-    model.add(Dense(1024, activation="relu"))
-    model.add(Dropout(0.5))
-    model.add(Dense(1, activation="sigmoid"))
+    model.add(keras.layers.Dense(1024, activation="relu"))
+    model.add(keras.layers.Dropout(0.5))
+    model.add(keras.layers.Dense(1024, activation="relu"))
+    model.add(keras.layers.Dropout(0.5))
+    model.add(keras.layers.Dense(1, activation="sigmoid"))
 
     model.compile(
         loss="binary_crossentropy",
@@ -51,13 +48,13 @@ def get_ResNet50(args):
     )
 
     callbacks_list = [
-        callbacks.ModelCheckpoint(
+        keras.callbacks.ModelCheckpoint(
             filepath=model_checkpoint_path,
             verbose=1,
             monitor="val_loss",
             save_best_only=True,
         ),
-        callbacks.ReduceLROnPlateau(
+        keras.callbacks.ReduceLROnPlateau(
             monitor="val_loss",
             verbose=1,
             factor=0.2,
@@ -65,13 +62,13 @@ def get_ResNet50(args):
             mode="min",
             min_lr=1e-8,
         ),
-        callbacks.CSVLogger(
+        keras.callbacks.CSVLogger(
             filename=csv_logger_path,
             separator=",",
             append=True,
         ),
-        callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1),
-        callbacks.EarlyStopping(
+        keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1),
+        keras.callbacks.EarlyStopping(
             monitor="val_loss",
             mode="min",
             verbose=1,
