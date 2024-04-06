@@ -47,6 +47,8 @@ class Heatmaps:
         - patch_size (tuple): Size of each patch (height, width, channels).
         - cmap (str): Colormap for coloring the tiles.
         - overlap (float): Overlap factor.
+        - percentile_scale (tuple): Percentile values for scaling the predictions.
+        - percentile_score (bool): Whether to use percentile scores for coloring.
 
         Returns:
         - tilemap (numpy.ndarray): Image with overlaid colored tiles.
@@ -107,6 +109,8 @@ class Heatmaps:
 
         # Normalize by the number of patches contributing to each region
         tilemap /= np.maximum(tilemap_counter, 1)[:, :, np.newaxis]
+        tilemap = (tilemap * 255).astype(np.uint8)
+
         return tilemap
 
     def superimpose(self, background, overlay, alpha=0.4, blur=None):
@@ -114,12 +118,13 @@ class Heatmaps:
         Superimpose an overlay image onto a background image.
 
         Parameters:
-        - background (numpy.ndarray): Background image.
-        - overlay (numpy.ndarray): Overlay image.
+        - background (numpy.ndarray): Background image, np.uint8;
+        - overlay (numpy.ndarray): Overlay image, np.uint8;
         - alpha (float): Transparency factor for the overlay (0.0 to 1.0).
+        - blur (tuple): Kernel size for blurring the overlay.
 
         Returns:
-        - superimposed_image (numpy.ndarray): Resulting superimposed image.
+        - superimposed_image (numpy.ndarray): Resulting superimposed image, np.uint8;
         """
         background = background[: overlay.shape[0], : overlay.shape[1], :]
 
@@ -129,13 +134,10 @@ class Heatmaps:
         if blur:
             overlay = cv2.blur(overlay, blur)
 
-        # Convert images to PIL format
-        # background_pil = Image.fromarray((background * 255).astype(np.uint8))
-        background_pil = Image.fromarray(background.numpy().astype(np.uint8))
-        overlay_pil = Image.fromarray((overlay * 255).astype(np.uint8))
-
-        superimposed_pil = Image.blend(background_pil, overlay_pil, alpha)
-        superimposed_image = np.array(superimposed_pil) / 255.0
+        superimposed_pil = Image.blend(
+            Image.fromarray(background), Image.fromarray(overlay), alpha
+        )
+        superimposed_image = np.array(superimposed_pil)
 
         return superimposed_image
 
@@ -156,6 +158,10 @@ class Heatmaps:
         blur=(112, 112),
         save_ext="png",
     ):
+        def save_image(image, filepath):
+            """Save a np.ndarray as a PIL.Image"""
+            Image.fromarray(image.astype(np.uint8)).save(filepath)
+
         self.save_dir = os.path.join(self.exp_dir, save_dir)
         os.makedirs(self.save_dir, exist_ok=True)
         print(f"Saving in {self.save_dir}")
@@ -164,6 +170,7 @@ class Heatmaps:
             zip(slides_annot, slide_names, predictions, slide_labels)
         ):
             cmap_labels = [(1 - pred) for pred in preds]
+            slide = slide.numpy().astype(np.uint8)
 
             tilemap = self.make_tilemap(
                 cmap_labels,
@@ -176,11 +183,7 @@ class Heatmaps:
             )
             heatmap = self.superimpose(slide, tilemap, alpha=alpha, blur=blur)
 
-            plt.clf()
-            plt.imshow(heatmap)
-
             filename = f"{os.path.splitext(slide_name)[0]}_heatmap.{save_ext}"
             heatmap_path = os.path.join(self.save_dir, filename)
-            plt.savefig(heatmap_path)
-            plt.close()
+            save_image(heatmap, heatmap_path)
         print(line_separator)
