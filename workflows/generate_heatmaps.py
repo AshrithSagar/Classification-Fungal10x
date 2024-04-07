@@ -12,7 +12,7 @@ from models.model import get_model
 from utils.config import GPUHandler, load_config
 from utils.dataset import FungalDataLoader
 from utils.heatmaps import Heatmaps
-from utils.trainer import ModelTrainer
+from utils.model import ModelTrainer
 
 
 if __name__ == "__main__":

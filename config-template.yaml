@@ -15,53 +15,35 @@ heatmaps:
   alpha: null
   blur: null
   cmap: null
+  downsample_factor: null
+  downsample_size: null
   file_extension: null
   overlap: null
   patch_size: null
   percentile_scale: null
   percentile_score: null
   save_dir: null
-trainer:
-  exp_base_dir: null
-  folds: null
-  model: null
+model:
+  _select: null
   model-CLAM_SB:
     k_sample: null
   model-EfficientNetB0:
-    model_args:
-      batch_size: null
-      data_dir: null
-      exp_dir: null
-      exp_name: null
-      max_epochs: null
-    model_params:
-      freeze_ratio: null
-      learning_rate: null
-      patience: null
-      start_from_epoch: null
-  model-ResNet50:
-    model_args:
-      batch_size: null
-      data_dir: null
-      exp_dir: null
-      exp_name: null
-      max_epochs: null
-    model_params:
-      freeze_ratio: null
-      learning_rate: null
-      patience: null
-      start_from_epoch: null
-  model_args:
-    batch_size: null
-    data_dir: null
-    exp_dir: null
-    exp_name: null
-    max_epochs: null
-  model_params:
     freeze_ratio: null
     learning_rate: null
     patience: null
     start_from_epoch: null
+  model-ResNet50:
+    freeze_ratio: null
+    learning_rate: null
+    patience: null
+    start_from_epoch: null
+trainer:
+  batch_size: null
+  data_dir: null
+  exp_base_dir: null
+  exp_name: null
+  folds: null
+  max_epochs: null
   overwrite_preds: null
   subset_size: null
   use_augment: null

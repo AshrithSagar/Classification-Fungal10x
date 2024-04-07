@@ -2,6 +2,7 @@
 trainer.py
 """
 
+import datetime
 import os
 import sys
 import time
@@ -12,6 +13,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import tensorflow as tf
+from tensorflow import keras
 import yaml
 from sklearn.metrics import classification_report, roc_auc_score, roc_curve
 from tensorflow.keras.callbacks import Callback
@@ -131,7 +133,7 @@ class ModelTrainer:
 
         self.results.update({"converging": None})
 
-        csv_logger_path = os.path.join(self.exp_dir, "csv_logger.csv")
+        csv_logger_path = os.path.join(self.exp_dir, "logger.csv")
         self.csv_data = pd.read_csv(csv_logger_path)
         epochs = len(history.epoch)
         total_epochs = len(self.csv_data["epoch"])
@@ -480,3 +482,82 @@ class EpochTimeCallback(Callback):
         end_time = time.time()
         epoch_time = end_time - self.start_time
         self.epoch_times.append(epoch_time)
+
+
+class ModelMaker:
+    def __init__(
+        self,
+        model_args,
+        model_params,
+        exp_dir=None,
+        model=None,
+    ):
+        self.args = model_args
+        self.params = model_params
+        self.exp_dir = exp_dir
+        self.model = model
+        self.callbacks_list = None
+
+        self.paths = {
+            "checkpoint": os.path.join(self.exp_dir, "model.h5"),
+            "csv_logger": os.path.join(self.exp_dir, "logger.csv"),
+            "tensorboard": os.path.join(
+                self.exp_dir,
+                "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S"),
+            ),
+        }
+
+        self.get()
+        self.load_checkpoint()
+
+    def get(self):
+        callbacks_list = []
+        if isinstance(self.model, str):
+            if self.model == "EfficientNetB0":
+                from models.EfficientNetB0 import model, model_callbacks
+
+                self.model = model(self.args, self.params)
+                callbacks_list = model_callbacks(self.args, self.params)
+
+            elif self.model == "ResNet50":
+                from models.ResNet50 import model, model_callbacks
+
+                self.model = model(self.args, self.params)
+                callbacks_list = model_callbacks(self.args, self.params)
+
+            else:
+                raise ValueError("Invalid model")
+
+        self.callbacks_list = [
+            keras.callbacks.ModelCheckpoint(
+                filepath=self.paths["checkpoint"],
+                verbose=1,
+                monitor="val_loss",
+                save_best_only=True,
+            ),
+            keras.callbacks.CSVLogger(
+                filename=self.paths["csv_logger"],
+                separator=",",
+                append=True,
+            ),
+            keras.callbacks.TensorBoard(
+                log_dir=self.paths["tensorboard"], histogram_freq=1
+            ),
+        ]
+        self.callbacks_list.extend(callbacks_list)
+
+    def load_checkpoint(self):
+        """Load the model from checkpoint if available"""
+
+        self.epochs_done = 0
+        if os.path.exists(self.paths["checkpoint"]):
+            print(f'Loading model from checkpoint: {self.paths["checkpoint"]}')
+            self.model.load_weights(self.paths["checkpoint"])
+
+            if os.path.exists(self.paths["csv_logger"]):
+                csv_data = pd.read_csv(self.paths["csv_logger"])
+                if not csv_data.empty:
+                    self.epochs_done = len(csv_data["epoch"])
+
+        remaining_epochs = max(0, self.args["max_epochs"] - self.epochs_done)
+        print(f"{self.epochs_done} Epochs done; Remaining epochs: {remaining_epochs}")

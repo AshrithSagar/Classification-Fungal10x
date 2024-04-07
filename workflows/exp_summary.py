@@ -7,7 +7,7 @@ import sys
 
 sys.path.append(os.getcwd())
 from utils.config import load_config
-from utils.trainer import ModelSummary
+from utils.model import ModelSummary
 
 
 if __name__ == "__main__":
