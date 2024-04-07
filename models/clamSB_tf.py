@@ -4,6 +4,7 @@ Model CLAM SB
 
 import numpy as np
 import tensorflow as tf
+from tensorflow import keras
 
 
 class Attn_Net(tf.keras.Model):
@@ -260,3 +261,23 @@ class CLAM_SB(tf.keras.Model):
         if return_features:
             results_dict.update({"features": M})
         return logits, Y_prob, Y_hat, A_raw, results_dict, attention_labels_loss
+
+
+def model(args, params):
+    model = CLAM_SB(
+        k_sample=params["k_sample"],
+    )
+
+    model.compile(
+        loss="binary_crossentropy",
+        optimizer=tf.optimizers.Adam(learning_rate=float(params["learning_rate"])),
+        metrics=["accuracy"],
+    )
+
+    model.build(input_shape=(None, 256, 256, 3))
+
+    return model
+
+
+def model_callbacks(args, params):
+    return []

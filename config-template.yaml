@@ -27,6 +27,7 @@ model:
   _select: null
   model-CLAM_SB:
     k_sample: null
+    learning_rate: null
   model-EfficientNetB0:
     freeze_ratio: null
     learning_rate: null

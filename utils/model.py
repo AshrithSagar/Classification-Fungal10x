@@ -525,6 +525,12 @@ class ModelMaker:
                 self.model = model(self.args, self.params)
                 callbacks_list = model_callbacks(self.args, self.params)
 
+            elif self.model == "CLAM_SB":
+                from models.clamSB_tf import model, model_callbacks
+
+                self.model = model(self.args, self.params)
+                callbacks_list = model_callbacks(self.args, self.params)
+
             else:
                 raise ValueError("Invalid model")
 
