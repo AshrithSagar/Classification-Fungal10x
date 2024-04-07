@@ -14,7 +14,9 @@ from models.model import freeze_layers
 
 def model(args, params):
     base_model = keras.applications.EfficientNetB0(
-        input_shape=(224, 224, 3), include_top=True, weights="imagenet"
+        input_shape=(224, 224, 3),
+        include_top=True,
+        weights="imagenet",
     )
     base_model = freeze_layers(base_model, params["freeze_ratio"])
 
