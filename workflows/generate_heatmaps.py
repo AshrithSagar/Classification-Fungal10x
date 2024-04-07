@@ -8,16 +8,16 @@ import sys
 sys.path.append(os.getcwd())
 import numpy as np
 
-from models.model import get_model
 from utils.config import GPUHandler, load_config
 from utils.dataset import FungalDataLoader
 from utils.heatmaps import Heatmaps
-from utils.model import ModelTrainer
+from utils.model import ModelMaker, ModelTrainer
 
 
 if __name__ == "__main__":
     g_args = load_config(config_file="config.yaml", key="gpu")
     d_args = load_config(config_file="config.yaml", key="dataset")
+    m_args = load_config(config_file="config.yaml", key="model")
     t_args = load_config(config_file="config.yaml", key="trainer")
     h_args = load_config(config_file="config.yaml", key="heatmaps")
 
@@ -43,21 +43,29 @@ if __name__ == "__main__":
         fold_dir = f"fold_{fold}"
         print(f"Running on fold: {fold}")
 
-        exp_dir = os.path.join(
-            t_args["exp_base_dir"], t_args["model_args"]["exp_name"], fold_dir
-        )
+        exp_dir = os.path.join(t_args["exp_base_dir"], t_args["exp_name"], fold_dir)
 
         preds_file = os.path.join(exp_dir, "preds.csv")
         if t_args["overwrite_preds"] or not os.path.exists(preds_file):
+            model_params = m_args[f'model-{m_args["_select"]}']
             mt = ModelTrainer(
                 exp_dir=exp_dir,
-                data_dir=os.path.join(t_args["model_args"]["data_dir"], fold_dir),
-                model_args=t_args["model_args"],
-                model_params=t_args["model_params"],
+                data_dir=os.path.join(t_args["data_dir"], fold_dir),
+                model_args=t_args,
+                model_params=model_params,
             )
             mt.load_dataset(t_args["subset_size"], t_args["use_augment"])
-            t_args["model_args"]["exp_dir"] = mt.exp_dir
-            mt = get_model(mt, t_args)
+            mdl = ModelMaker(
+                model_args=t_args,
+                model_params=model_params,
+                exp_dir=mt.exp_dir,
+                model=m_args["_select"],
+            )
+            mt.model, mt.callbacks_list, mt.epochs_done = (
+                mdl.model,
+                mdl.callbacks_list,
+                mdl.epochs_done,
+            )
             mt.info()
 
             predictions = mt.predict(
