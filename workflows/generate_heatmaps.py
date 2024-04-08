@@ -25,27 +25,51 @@ if __name__ == "__main__":
     gpu.check()
     gpu.set(device_index=g_args["device_index"])
 
-    fdl = FungalDataLoader(
-        d_args["slide_dir"],
-        d_args["annot_dir"],
-    )
-    fdl.load_slides()
-    fdl.create_splits()
-    fdl.split_info()
-    fdl.downsample_slides(
-        size=d_args["downsample_size"],
-        factor=d_args["downsample_factor"],
-    )
-    fdl.extract_patches()
-    fdl.get_annotations()
+    if h_args["source_dir"]:
+        print(f'Loading slides from directory: {h_args["source_dir"]}')
+        fdl = FungalDataLoader(
+            h_args["source_dir"],
+            h_args["source_dir"],
+        )
+        fdl.load_slides()
+        fdl.get_downsample_dims(
+            size=h_args["downsample_size"],
+            factor=h_args["downsample_factor"],
+        )
+        fdl.slide_dataset = fdl.downsample(fdl.slide_dataset)
+        fdl.get_stride(h_args["patch_size"][0:2], h_args["overlap"])
+        all_patches, fdl.patches_shape = fdl.get_patches(fdl.slide_dataset)
+        slides = fdl.slide_dataset
+        slide_names = fdl.slide_names
+        slide_labels = fdl.slide_labels
+
+    else:
+        print(f'Loading test slides from directory: {d_args["slide_dir"]}')
+        fdl = FungalDataLoader(
+            d_args["slide_dir"],
+            d_args["annot_dir"],
+        )
+        fdl.load_slides()
+        fdl.create_splits()
+        fdl.split_info()
+        fdl.downsample_slides(
+            size=d_args["downsample_size"],
+            factor=d_args["downsample_factor"],
+        )
+        fdl.extract_patches()
+        fdl.get_annotations()
+        all_patches = fdl.x_test_patches
+        slides = fdl.x_test_annot
+        slide_names = fdl.x_test_slide_names
+        slide_labels = fdl.y_test_slides
 
     for fold in t_args["folds"]:
         fold_dir = f"fold_{fold}"
         print(f"Running on fold: {fold}")
 
         exp_dir = os.path.join(t_args["exp_base_dir"], t_args["exp_name"], fold_dir)
-
         preds_file = os.path.join(exp_dir, "preds.csv")
+
         if t_args["overwrite_preds"] or not os.path.exists(preds_file):
             model_params = m_args[f'model-{m_args["_select"]}']
             mt = ModelTrainer(
@@ -67,20 +91,18 @@ if __name__ == "__main__":
                 mdl.epochs_done,
             )
             mt.info()
+            predictions = mt.predict(all_patches, overwrite=t_args["overwrite_preds"])
 
-            predictions = mt.predict(
-                fdl.x_test_patches, overwrite=t_args["overwrite_preds"]
-            )
         else:
             predictions = np.loadtxt(preds_file, delimiter=",")
 
         hm = Heatmaps(exp_dir)
         hm.save(
             save_dir=h_args["save_dir"],
-            slides_annot=fdl.x_test_annot,
-            slide_names=fdl.x_test_slide_names,
+            slides=slides,
+            slide_names=slide_names,
             predictions=predictions,
-            slide_labels=fdl.y_test_slides,
+            slide_labels=slide_labels,
             patches_shape=fdl.patches_shape,
             patch_size=h_args["patch_size"],
             cmap=h_args["cmap"],

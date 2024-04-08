@@ -164,53 +164,65 @@ class FungalDataLoader:
 
         print(line_separator)
 
-    def downsample_slides(self, size=None, factor=None, preserve_aspect_ratio=True):
-        def downsample(slides):
-            return tf.image.resize(
-                slides,
-                self.downsample_size,
-                preserve_aspect_ratio=preserve_aspect_ratio,
-            )
-
-        self.downsample_size = None
+    def get_downsample_dims(self, size=None, factor=None):
+        self.downsample_dims = None
         if factor:
-            self.downsample_size = tuple([int(x / factor) for x in self.slide_dims])
+            self.downsample_dims = tuple([int(x / factor) for x in self.slide_dims])
         if size:
-            self.downsample_size = size
-        if not self.downsample_size:
+            self.downsample_dims = size
+        if not self.downsample_dims:
             raise ValueError("Either size or downsample factor must be provided.")
 
-        self.x_train_slides = downsample(self.x_train_slides)
-        self.x_test_slides = downsample(self.x_test_slides)
-        self.x_train_annot = downsample(self.x_train_annot)
-        self.x_test_annot = downsample(self.x_test_annot)
-        print(f"Downsampled to size: {self.downsample_size}")
+    def downsample(self, slides, preserve_aspect_ratio=True):
+        preserve_aspect_ratio = (
+            preserve_aspect_ratio
+            if not hasattr(self, "preserve_aspect_ratio")
+            else self.preserve_aspect_ratio
+        )
+
+        return tf.image.resize(
+            slides,
+            self.downsample_dims,
+            preserve_aspect_ratio=preserve_aspect_ratio,
+        )
+
+    def downsample_slides(self, size=None, factor=None, preserve_aspect_ratio=True):
+        self.preserve_aspect_ratio = preserve_aspect_ratio
+        self.get_downsample_dims(size, factor)
+        self.x_train_slides = self.downsample(self.x_train_slides)
+        self.x_test_slides = self.downsample(self.x_test_slides)
+        self.x_train_annot = self.downsample(self.x_train_annot)
+        self.x_test_annot = self.downsample(self.x_test_annot)
+        print(f"Downsampled to size: {self.downsample_dims}")
         print(line_separator)
 
-    def extract_patches(self, size=(224, 224), overlap=0.5):
-        def get_patches(dataset):
-            all_patches = tf.image.extract_patches(
-                images=dataset,
-                sizes=(1, *self.patch_dims, 1),
-                strides=(1, *stride, 1),
-                rates=(1, 1, 1, 1),
-                padding="VALID",
-            )
-            patches_shape = (all_patches.shape[1], all_patches.shape[2])
-            num_patches = np.prod(patches_shape)
-            depth = dataset.shape[3]
-            all_patches = tf.reshape(
-                all_patches, (-1, num_patches, *self.patch_dims, depth)
-            )
-            return all_patches, patches_shape
-
+    def get_stride(self, size=(224, 224), overlap=0.5):
         self.patch_dims = size
-        stride = tuple(int(s * (1 - overlap)) for s in self.patch_dims)
-        self.x_train_patches, _ = get_patches(self.x_train_slides)
-        self.x_test_patches, self.patches_shape = get_patches(self.x_test_slides)
-        self.x_train_annot_patches, _ = get_patches(self.x_train_annot)
-        self.x_test_annot_patches, _ = get_patches(self.x_test_annot)
-        self.annot_dataset_patches, _ = get_patches(self.annot_dataset)
+        self.stride = tuple(int(s * (1 - overlap)) for s in size)
+
+    def get_patches(self, dataset):
+        all_patches = tf.image.extract_patches(
+            images=dataset,
+            sizes=(1, *self.patch_dims, 1),
+            strides=(1, *self.stride, 1),
+            rates=(1, 1, 1, 1),
+            padding="VALID",
+        )
+        patches_shape = (all_patches.shape[1], all_patches.shape[2])
+        num_patches = np.prod(patches_shape)
+        depth = dataset.shape[3]
+        all_patches = tf.reshape(
+            all_patches, (-1, num_patches, *self.patch_dims, depth)
+        )
+        return all_patches, patches_shape
+
+    def extract_patches(self, size=(224, 224), overlap=0.5):
+        self.get_stride(size, overlap)
+        self.x_train_patches, _ = self.get_patches(self.x_train_slides)
+        self.x_test_patches, self.patches_shape = self.get_patches(self.x_test_slides)
+        self.x_train_annot_patches, _ = self.get_patches(self.x_train_annot)
+        self.x_test_annot_patches, _ = self.get_patches(self.x_test_annot)
+        self.annot_dataset_patches, _ = self.get_patches(self.annot_dataset)
 
     def get_annotations(self, threshold=200):
         def get_annot(patches):
@@ -498,7 +510,7 @@ class FungalDataLoader:
         if self.data_dir_name is None:
             raise ValueError("Please provide a data_dir_name to save at")
 
-        self.data_dir = f"dataset/{self.data_dir_name}-{self.downsample_size[0]}_{self.downsample_size[1]}"
+        self.data_dir = f"dataset/{self.data_dir_name}-{self.downsample_dims[0]}_{self.downsample_dims[1]}"
         os.makedirs(self.data_dir, exist_ok=True)
 
         save_dir = os.path.join(self.data_dir, f"fold_{self.fold}")

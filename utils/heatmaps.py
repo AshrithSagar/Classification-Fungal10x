@@ -144,7 +144,7 @@ class Heatmaps:
     def save(
         self,
         save_dir,
-        slides_annot,
+        slides,
         slide_names,
         predictions,
         slide_labels,
@@ -167,7 +167,7 @@ class Heatmaps:
         print(f"Saving in {self.save_dir}")
 
         for slide, slide_name, preds, label in tqdm(
-            zip(slides_annot, slide_names, predictions, slide_labels)
+            zip(slides, slide_names, predictions, slide_labels)
         ):
             cmap_labels = [(1 - pred) for pred in preds]
             slide = slide.numpy().astype(np.uint8)
