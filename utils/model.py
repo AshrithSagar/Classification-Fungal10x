@@ -24,6 +24,12 @@ from utils.config import line_separator
 
 
 class ModelTrainer:
+    """
+    This class is responsible for training, evaluating, and predicting
+    using a specified machine learning model. It handles data loading,
+    training, evaluation metrics, and result storage.
+    """
+
     def __init__(
         self,
         exp_base_dir=None,
@@ -34,6 +40,17 @@ class ModelTrainer:
         model_params=None,
         seed=42,
     ):
+        """
+        Parameters:
+        - exp_base_dir: Base directory for experiment results.
+        - exp_name: Name of the experiment.
+        - exp_dir: Directory for the specific experiment, defaults to "exp_base_dir/exp_name".
+        - data_dir: Directory containing the dataset.
+        - model_args: Arguments for configuring the model.
+        - model_params: Model-specific parameters.
+        - seed: Random seed for reproducibility.
+        """
+
         self.seed = seed
         tf.random.set_seed(seed)
         os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
@@ -51,6 +68,14 @@ class ModelTrainer:
         self.results = {}
 
     def load_dataset(self, subset_size=None, use_augment=False):
+        """
+        Parameters:
+        - Loads the dataset from the data directory.
+        - subset_size: Optional, subset of the dataset to use.
+            Default is to use entire available dataset.
+        - use_augment: Optional, whether to use the augmented dataset.
+        """
+
         train_ds_dir = "train_unaugmented" if not use_augment else "train"
         self.train_ds = tf.keras.preprocessing.image_dataset_from_directory(
             os.path.join(self.data_dir, train_ds_dir),
@@ -292,10 +317,19 @@ class ModelTrainer:
 
 
 class ModelSummary:
+    """This class provides functionality to analyze and summarize results from the experiments."""
+
     def __init__(self, exp_base_dir, exp_name):
+        """
+        Parameters:
+        - exp_base_dir: Base directory containing experiment directories.
+        - exp_name: Name of the experiment.
+        """
+
         self.exp_dir = os.path.join(exp_base_dir, exp_name)
 
     def check_folds(self, folds=None):
+        """Checks and lists fold directories within the experiment."""
         if folds is None:
             self.folds = [
                 fold_dir
@@ -307,6 +341,10 @@ class ModelSummary:
         return self.folds
 
     def get_cv_results(self, folds=None):
+        """
+        Computes cross-validation results from fold-wise experiment results.
+        mean and standard deviation are returned for each metric.
+        """
         self.get_fold_results(folds)
 
         mean_std_metrics = {}
@@ -351,6 +389,7 @@ class ModelSummary:
         mean_std_df.to_csv(os.path.join(self.exp_dir, "cv_results.csv"), index=True)
 
     def get_fold_results(self, folds=None):
+        """Fetches and summarizes results for individual folds."""
         self.check_folds(folds)
 
         self.results = []
@@ -396,6 +435,7 @@ class ModelSummary:
         results_df.to_csv(os.path.join(self.exp_dir, "fold_results.csv"), index=True)
 
     def get_plots(self, folds=None):
+        """Creates a zip file containing plots for each fold."""
         self.check_folds(folds)
 
         zip_file_path = os.path.join(
@@ -415,6 +455,7 @@ class ModelSummary:
                     zipf.write(file, arcname=os.path.join(fold, filename))
 
     def get_heatmaps(self, folder="heatmaps", folds=None):
+        """Creates a zip file containing heatmaps for each fold."""
         self.check_folds(folds)
 
         zip_file_path = os.path.join(
@@ -428,6 +469,7 @@ class ModelSummary:
                     zipf.write(file, arcname=os.path.join(fold, filename))
 
     def get_results(self, heatmaps="heatmaps", folds=None):
+        """Creates a zip file containing overall results, including metrics, plots, and heatmaps."""
         self.check_folds(folds)
         self.get_cv_results(folds)
 
@@ -469,7 +511,8 @@ class ModelSummary:
 
 
 class EpochTimeCallback(Callback):
-    """A custom callback to log the time taken for each epoch."""
+    """A custom callback class to log the time
+    taken for each epoch during model training."""
 
     def __init__(self):
         super().__init__()
@@ -485,13 +528,25 @@ class EpochTimeCallback(Callback):
 
 
 class ModelMaker:
+    """
+    This class handles the creation and configuration of
+    machine learning models based on specified parameters.
+    """
+
     def __init__(
         self,
         model_args,
         model_params,
-        exp_dir=None,
-        model=None,
+        exp_dir: str = None,
+        model: str = None,
     ):
+        """
+        Parameters:
+        - model_args: Arguments for configuring the model.
+        - model_params: Model-specific parameters.
+        - exp_dir: Directory for experiment results.
+        - model: Name of the model to be used.
+        """
         self.args = model_args
         self.params = model_params
         self.exp_dir = exp_dir
@@ -511,6 +566,9 @@ class ModelMaker:
         self.load_checkpoint()
 
     def get(self):
+        """
+        Retrieves the specified model architecture and associated callbacks.
+        """
         callbacks_list = []
         if isinstance(self.model, str):
             if self.model == "EfficientNetB0":
@@ -553,7 +611,7 @@ class ModelMaker:
         self.callbacks_list.extend(callbacks_list)
 
     def load_checkpoint(self):
-        """Load the model from checkpoint if available"""
+        """Loads model weights from checkpoint file, if available."""
 
         self.epochs_done = 0
         if os.path.exists(self.paths["checkpoint"]):
