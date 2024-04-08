@@ -9,7 +9,7 @@ import tensorflow as tf
 from tensorflow import keras
 
 sys.path.append(os.getcwd())
-from models.model import freeze_layers
+from models.model_utils import freeze_layers
 
 
 def model(args, params):

@@ -1,13 +1,6 @@
 """
-model.py
+model_utils.py
 """
-
-import datetime
-import os
-
-import pandas as pd
-import tensorflow as tf
-from tensorflow import keras
 
 
 def freeze_layers(model, freeze, verbose=True):
