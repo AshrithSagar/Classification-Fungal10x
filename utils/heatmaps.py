@@ -156,11 +156,20 @@ class Heatmaps:
         percentile_score=False,
         alpha=0.4,
         blur=(112, 112),
+        use_plt=False,
         save_ext="png",
     ):
-        def save_image(image, filepath):
-            """Save a np.ndarray as a PIL.Image"""
-            Image.fromarray(image.astype(np.uint8)).save(filepath)
+        def save_image(image, filepath, use_plt=False):
+            if not use_plt:
+                # Save an np.ndarray as a PIL.Image
+                Image.fromarray(image.astype(np.uint8)).save(filepath)
+            else:
+                # matplotlib figure
+                plt.clf()
+                plt.imshow(image)
+                plt.axis("off")
+                plt.savefig(filepath, bbox_inches="tight", pad_inches=0)
+                plt.close()
 
         self.save_dir = os.path.join(self.exp_dir, save_dir)
         os.makedirs(self.save_dir, exist_ok=True)
@@ -185,5 +194,5 @@ class Heatmaps:
 
             filename = f"{os.path.splitext(slide_name)[0]}_heatmap.{save_ext}"
             heatmap_path = os.path.join(self.save_dir, filename)
-            save_image(heatmap, heatmap_path)
+            save_image(heatmap, heatmap_path, use_plt=use_plt)
         print(line_separator)

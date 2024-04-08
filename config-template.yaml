@@ -24,6 +24,7 @@ heatmaps:
   percentile_score: null
   save_dir: null
   source_dir: null
+  use_plt: null
 model:
   _select: null
   model-CLAM_SB:

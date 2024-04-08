@@ -8,7 +8,7 @@ import sys
 sys.path.append(os.getcwd())
 import numpy as np
 
-from utils.config import GPUHandler, load_config
+from utils.config import GPUHandler, line_separator, load_config
 from utils.dataset import FungalDataLoader
 from utils.heatmaps import Heatmaps
 from utils.model import ModelMaker, ModelTrainer
@@ -62,6 +62,7 @@ if __name__ == "__main__":
         slides = fdl.x_test_annot
         slide_names = fdl.x_test_slide_names
         slide_labels = fdl.y_test_slides
+    print(line_separator)
 
     for fold in t_args["folds"]:
         fold_dir = f"fold_{fold}"
@@ -111,5 +112,6 @@ if __name__ == "__main__":
             percentile_score=h_args["percentile_score"],
             alpha=h_args["alpha"],
             blur=h_args["blur"],
+            use_plt=h_args["use_plt"],
             save_ext=h_args["file_extension"],
         )
