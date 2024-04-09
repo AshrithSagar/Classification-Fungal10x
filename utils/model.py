@@ -571,26 +571,25 @@ class ModelMaker:
         """
         callbacks_list = []
         if isinstance(self.model, str):
-            if self.model == "EfficientNetB0":
-                from models.EfficientNetB0 import model, model_callbacks
+            model_imports = {
+                "CLAM_SB": "models.clamSB_tf",
+                "EfficientNetB0": "models.EfficientNetB0",
+                "MobileNet": "models.MobileNet",
+                "ResNet50": "models.ResNet50",
+                "VGG16": "models.VGG16",
+            }
 
-                self.model = model(self.args, self.params)
-                callbacks_list = model_callbacks(self.args, self.params)
-
-            elif self.model == "ResNet50":
-                from models.ResNet50 import model, model_callbacks
-
-                self.model = model(self.args, self.params)
-                callbacks_list = model_callbacks(self.args, self.params)
-
-            elif self.model == "CLAM_SB":
-                from models.clamSB_tf import model, model_callbacks
-
-                self.model = model(self.args, self.params)
-                callbacks_list = model_callbacks(self.args, self.params)
-
-            else:
+            if self.model not in model_imports:
                 raise ValueError("Invalid model")
+
+            module = __import__(
+                model_imports[self.model], fromlist=["model", "model_callbacks"]
+            )
+            model_func = getattr(module, "model")
+            callbacks_func = getattr(module, "model_callbacks")
+
+            self.model = model_func(self.args, self.params)
+            callbacks_list = callbacks_func(self.args, self.params)
 
         self.callbacks_list = [
             keras.callbacks.ModelCheckpoint(
