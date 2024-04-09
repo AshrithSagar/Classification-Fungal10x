@@ -35,7 +35,17 @@ model:
     learning_rate: null
     patience: null
     start_from_epoch: null
+  model-MobileNet:
+    freeze_ratio: null
+    learning_rate: null
+    patience: null
+    start_from_epoch: null
   model-ResNet50:
+    freeze_ratio: null
+    learning_rate: null
+    patience: null
+    start_from_epoch: null
+  model-VGG16:
     freeze_ratio: null
     learning_rate: null
     patience: null
