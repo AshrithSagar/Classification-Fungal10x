@@ -176,7 +176,8 @@ class ModelTrainer:
             plt.ylabel("accuracy")
             plt.xlabel("epoch")
             plt.legend(["train", "val"], loc="upper left")
-            plt.savefig(os.path.join(self.exp_dir, "model_accuracy.jpeg"), dpi=150)
+            save_file = os.path.join(self.exp_dir, "model_accuracy.jpeg")
+            plt.savefig(save_file, dpi=150)
             plt.show() if show_plots else plt.close()
 
         def get_loss_plot(show_plots=False):
@@ -187,7 +188,8 @@ class ModelTrainer:
             plt.ylabel("loss")
             plt.xlabel("epoch")
             plt.legend(["train", "val"], loc="upper left")
-            plt.savefig(os.path.join(self.exp_dir, "model_loss.jpeg"), dpi=150)
+            save_file = os.path.join(self.exp_dir, "model_loss.jpeg")
+            plt.savefig(save_file, dpi=150)
             plt.show() if show_plots else plt.close()
 
         def get_classification_report():
@@ -227,8 +229,8 @@ class ModelTrainer:
             ns_probs = np.zeros(len(self.y_test))
             ns_auc = roc_auc_score(self.y_test, ns_probs)
             lr_auc = roc_auc_score(self.y_test, self.y_pred)
-            print("No Skill: ROC AUC=%.3f" % (ns_auc))
-            print("efficientnet: ROC AUC=%.3f" % (lr_auc))
+            print(f"No Skill: ROC AUC={ns_auc:.3}")
+            print(f"{self.model_name}: ROC AUC={lr_auc:.3}")
             print(line_separator)
 
             ns_fpr, ns_tpr, _ = roc_curve(self.y_test, ns_probs)
@@ -236,7 +238,7 @@ class ModelTrainer:
 
             plt.clf()
             plt.plot(ns_fpr, ns_tpr, linestyle="--", label="No Skill")
-            plt.plot(lr_fpr, lr_tpr, marker=".", label="efficientnet")
+            plt.plot(lr_fpr, lr_tpr, marker=".", label=self.model_name)
             plt.xlabel("False Positive Rate")
             plt.ylabel("True Positive Rate")
             plt.legend(loc="lower right")

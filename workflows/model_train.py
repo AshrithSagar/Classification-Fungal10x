@@ -33,11 +33,12 @@ if __name__ == "__main__":
         )
         mt.load_dataset(t_args["subset_size"], t_args["use_augment"])
 
+        mt.model_name = m_args["_select"]
         mdl = ModelMaker(
             model_args=t_args,
             model_params=model_params,
             exp_dir=mt.exp_dir,
-            model=m_args["_select"],
+            model=mt.model_name,
         )
         mt.model, mt.callbacks_list, mt.epochs_done = (
             mdl.model,
