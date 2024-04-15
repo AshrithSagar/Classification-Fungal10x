@@ -43,34 +43,34 @@ Refer to the [config-template.yaml](config-template.yaml) file for more informat
 ```yaml
 ---
 dataset:
-  annot_dir: (path) Path to the directory containing the annotations. Slides should have the same names as that in slide_dir.
-  create_zip: null
-  data_dir_name: (str) dataset/{data_dir_name}/;
-  downsample_factor: (int) Downsample slides resolution by this factor.
+  annot_dir: (path) Slide annotations directory path. Should have the same names as that in slide_dir.
+  create_zip: (bool) Bundle the created dataset directory in a ZIP for easier download.
+  data_dir_name: (str) Will be used to create dataset/{data_dir_name}/;
+  downsample_factor: (int) Downsample slides resolution by this factor. Defaults to preserve aspect ratio.
   downsample_size: (tuple) Downsample slides to this size.
   n_splits: (int) Number of splits for cross-validation.
-  save_slides: (bool) Save slides, in dataset/{data_dir_name}-slides/;
-  slide_dir: (path) Path to the directory containing the slides. Corresponding annotations should be in annot_dir.
-  use_augment: (bool) Data augmentation at patch level for the train split. Preferably always use as True.
+  save_slides: (bool) Whether to save slides, in dataset/{data_dir_name}-slides/;
+  slide_dir: (path) Slides directory path. Corresponding annotations should be in annot_dir.
+  use_augment: (bool) Whether to use data augmentation at patch level for the train split. Preferably always use as True.
 gpu:
   device_index: (int) Device index for the GPU. Set to -1 to disable GPU and use CPU instead.
 heatmaps:
   alpha: (float) Heatmap transparency while overlaying on the slide.
   blur: (tuple) Gaussian blur kernel size for the heatmap.
-  cmap: (str) Colormap for the heatmap.
+  cmap: (str) Colormap for the heatmap. Refer to matplotlib colormaps.
   downsample_factor: (int) Downsample slides resolution by this factor. Will be used when source_dir is provided.
   downsample_size: (tuple) Downsample slides to this size. Will be used when source_dir is provided.
-  file_extension: (str) File extension for the heatmap images.
-  overlap: (float) Overlap factor for the heatmap patches.
+  file_extension: (str) File extension for the heatmap images to be saved.
+  overlap: (float) Overlap factor for the heatmap patches. Should be between 0 and 1.
   patch_size: (tuple) Patch size for the heatmap.
   percentile_scale: (tuple) Scale the heatmap values to percentile. Uses numpy.percentile();
   percentile_score: (bool) Percentile score for scaling the heatmap values. Uses scipy.stats.percentileofscore();
   save_dir: (path) Directory to save the heatmap images.
   source_dir: (path) Path to the directory containing the slides. Will be used to get the predictions for the heatmap.
-  source_dir_annot: (path) Path to the directory containing the annotations. Will be used to get the ground truth for the heatmap. Should have the same names as that in source_dir.
+  source_dir_annot: (path) Path to the directory containing the annotations corresponding to the slides in source_dir. Slides should have the same names as in source_dir. Will be used to overlap with the heatmap for easier visualisation. Set to null to use source_dir slides itself for heatmaps.
   use_plt: (bool) Use matplotlib to generate the heatmap images.
 model:
-  _select: (str) Model to use for training and inference. Choose from the available models:- {CLAM_SB, EfficientNetB0, MobileNet, ResNet50, VGG16}.
+  _select: (str) Model to use for training and inference. {CLAM_SB, EfficientNetB0, MobileNet, ResNet50, VGG16}.
   model-CLAM_SB:
     k_sample: null
     learning_rate: null
@@ -96,12 +96,12 @@ model:
     start_from_epoch: null
 trainer:
   batch_size: (int) Batch size for training.
-  data_dir: (path) Path to the directory containing the dataset. Should likely be as some dataset/{data_dir_name}/;
-  exp_base_dir: (path) Base directory to save the experiment results.
+  data_dir: (path) Path to the directory containing the dataset. Should likely be as some dataset/{data_dir_name}/; Should contain within as /fold-*/{train, val, test}/{fungal, non-fungal}/; Refer to the directory structure.
+  exp_base_dir: (path) Base directory containing all the experiment folders.
   exp_name: (str) Current experiment name. Will be used to create a directory in exp_base_dir.
   folds: (list) List of folds to be considered. Zero-indexed.
   max_epochs: (int) Maximum number of epochs to train the model.
-  overwrite_preds: (bool) Overwrite the predictions if already present.
+  overwrite_preds: (bool) Overwrite the predictions if already present. Checks for {exp_name}/{fold-*}/preds.csv;
   subset_size: (int) Subset size of the dataset to be used for training. Used for trial purposes. Set to null to use the entire dataset.
   use_augment: (bool) Whether to use the augmented dataset for training present at train/, or use train_unaugmented/ for training. Whole path:- dataset/{data_dir_name}/fold-*/{train,train_unaugmented}/;
 ```
