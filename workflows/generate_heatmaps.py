@@ -27,9 +27,15 @@ if __name__ == "__main__":
 
     if h_args["source_dir"]:
         print(f'Loading slides from directory: {h_args["source_dir"]}')
+        source_dir_annot = (
+            h_args["source_dir_annot"]
+            if h_args["source_dir_annot"]
+            else h_args["source_dir"]
+        )
+
         fdl = FungalDataLoader(
             h_args["source_dir"],
-            h_args["source_dir"],
+            source_dir_annot,
         )
         fdl.load_slides()
         fdl.get_downsample_dims(
