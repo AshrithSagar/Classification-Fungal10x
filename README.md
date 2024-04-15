@@ -97,7 +97,7 @@ model:
 trainer:
   batch_size: (int) Batch size for training.
   data_dir: (path) Path to the directory containing the dataset. Should likely be as some dataset/{data_dir_name}/; Should contain within as /fold-*/{train, val, test}/{fungal, non-fungal}/; Refer to the directory structure.
-  exp_base_dir: (path) Base directory containing all the experiment folders.
+  exp_base_dir: (path) Base directory containing all the experiment folders. Usually set to experiments/.
   exp_name: (str) Current experiment name. Will be used to create a directory in exp_base_dir.
   folds: (list) List of folds to be considered. Zero-indexed.
   max_epochs: (int) Maximum number of epochs to train the model.
