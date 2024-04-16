@@ -173,6 +173,24 @@ dataset
     └── ...
 ```
 
+### Workflows
+
+Run the different workflows using `python3 workflows/*.py` from the project directory.
+
+1. `create_dataset.py`:
+Create the dataset from the slides and annotations.
+Creates a patch level dataset from the slides and performs Stratified k-fold at the patch level.
+
+1. `model_train.py`:
+Trains the model on the patch level dataset using the selected model.
+
+1. `generate_heatmaps.py`:
+Generate heatmaps for the slides using the predictions of the trained model.
+
+1. `exp_summary.py`:
+Generate a summary of the experiment over the different folds.
+Also packs the results (metrics, plots and heatmaps) in an exportable ZIP file.
+
 ## License
 
 This project falls under the [MIT License](LICENSE).
