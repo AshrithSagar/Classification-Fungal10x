@@ -180,9 +180,11 @@ Run the different workflows using `python3 workflows/*.py` from the project dire
 1. `create_dataset.py`:
 Create the dataset from the slides and annotations.
 Creates a patch level dataset from the slides and performs Stratified k-fold at the patch level.
+Mainly uses the `dataset` key in config.yaml.
 
 1. `model_train.py`:
 Trains the model on the patch level dataset using the selected model.
+The `trainer` key in `config.yaml` is used for training configurations, while the `model` key is utilised for selecting models and specifying their parameters.
 
 1. `generate_heatmaps.py`:
 Generate heatmaps for the slides using the predictions of the trained model.
