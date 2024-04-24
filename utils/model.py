@@ -636,7 +636,7 @@ class ExperimentSummary:
         self.exp_names = exp_names
         self.exp_dirs = [os.path.join(exp_base_dir, exp_name) for exp_name in exp_names]
 
-    def get_results(self):
+    def get_results(self, format=False):
         """Fetches CV results from each experiment directory"""
         results = []
         for exp_dir in self.exp_dirs:
@@ -651,7 +651,11 @@ class ExperimentSummary:
             columns=results_df.index.get_level_values(1),
         )
 
-        self.results_df = self.results_df.applymap(lambda x: f"{x * 100:.2f}%")
+        if format:
+            self.results_df = self.results_df.applymap(lambda x: f"{x * 100:.2f}%")
+
+    def save(self, filename="exp_results.csv"):
+        """Saves the summarized results to a CSV file"""
         self.results_df.to_csv(
-            os.path.join(self.exp_base_dir, "exp_results.csv"), index=self.exp_names
+            os.path.join(self.exp_base_dir, filename), index=self.exp_names
         )
