@@ -319,7 +319,7 @@ class ModelTrainer:
 
 
 class ModelSummary:
-    """This class provides functionality to analyze and summarize results from the experiments."""
+    """This class provides functionality to analyze and summarize results of each trained model."""
 
     def __init__(self, exp_base_dir, exp_name):
         """
@@ -626,3 +626,32 @@ class ModelMaker:
 
         remaining_epochs = max(0, self.args["max_epochs"] - self.epochs_done)
         print(f"{self.epochs_done} Epochs done; Remaining epochs: {remaining_epochs}")
+
+
+class ExperimentSummary:
+    """Summarize results from multiple experiments"""
+
+    def __init__(self, exp_base_dir, exp_names):
+        self.exp_base_dir = exp_base_dir
+        self.exp_names = exp_names
+        self.exp_dirs = [os.path.join(exp_base_dir, exp_name) for exp_name in exp_names]
+
+    def get_results(self):
+        """Fetches CV results from each experiment directory"""
+        results = []
+        for exp_dir in self.exp_dirs:
+            file = os.path.join(exp_dir, "cv_results.csv")
+            df = pd.read_csv(file, index_col=0)
+            results.append(df)
+
+        results_df = pd.concat(results, keys=self.exp_names)
+        self.results_df = results_df.pivot_table(
+            values="mean",
+            index=results_df.index.get_level_values(0),
+            columns=results_df.index.get_level_values(1),
+        )
+
+        self.results_df = self.results_df.applymap(lambda x: f"{x * 100:.2f}%")
+        self.results_df.to_csv(
+            os.path.join(self.exp_base_dir, "exp_results.csv"), index=self.exp_names
+        )

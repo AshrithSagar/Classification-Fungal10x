@@ -51,6 +51,8 @@ model:
     learning_rate: null
     patience: null
     start_from_epoch: null
+summary:
+  exp_names: null
 trainer:
   batch_size: null
   data_dir: null
