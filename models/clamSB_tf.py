@@ -14,38 +14,32 @@ from tensorflow.keras.optimizers import Adam
 class Attn_Net(tf.keras.Model):
     def __init__(self, L=1024, D=256, dropout=False, n_classes=1):
         super(Attn_Net, self).__init__()
-        self.module = [Dense(D, activation="tanh")]
-
-        if dropout:
-            self.module.append(Dropout(0.25))
-
-        self.module.append(Dense(n_classes))
-        self.module = Sequential(self.module)
+        self.dense1 = Dense(D, activation="tanh")
+        self.dropout = Dropout(0.25) if dropout else None
+        self.dense2 = Dense(n_classes)
 
     def call(self, x):
-        return self.module(x), x
+        x = self.dense1(x)
+        if self.dropout:
+            x = self.dropout(x)
+        return self.dense2(x), x
 
 
 class Attn_Net_Gated(tf.keras.Model):
     def __init__(self, L=1024, D=256, dropout=False, n_classes=1):
         super(Attn_Net_Gated, self).__init__()
-        self.attention_a = [tf.keras.layers.Dense(D, activation="tanh")]
-        self.attention_b = [tf.keras.layers.Dense(D, activation="sigmoid")]
-
-        if dropout:
-            self.attention_a.append(Dropout(0.25))
-            self.attention_b.append(Dropout(0.25))
-
-        self.attention_a = Sequential(self.attention_a)
-        self.attention_b = Sequential(self.attention_b)
-        self.attention_c = Dense(n_classes)
+        self.dense1_a = Dense(D, activation="tanh")
+        self.dense1_b = Dense(D, activation="sigmoid")
+        self.dropout = Dropout(0.25) if dropout else None
+        self.dense2 = Dense(n_classes)
 
     def call(self, x):
-        a = self.attention_a(x)
-        b = self.attention_b(x)
+        a = self.dense1_a(x)
+        b = self.dense1_b(x)
         A = tf.multiply(a, b)
-        A = self.attention_c(A)  # N x n_classes
-        return A, x
+        if self.dropout:
+            A = self.dropout(A)
+        return self.dense2(A), x
 
 
 class CLAM_SB(tf.keras.Model):
@@ -60,21 +54,16 @@ class CLAM_SB(tf.keras.Model):
         subtyping=False,
     ):
         super(CLAM_SB, self).__init__()
-        self.size_dict = {"small": [1024, 512, 256], "big": [1024, 512, 384]}
-        size = self.size_dict[size_arg]
-        fc = [Dense(size[1], activation=tf.nn.relu)]
-        if dropout:
-            fc.append(Dropout(0.25))
+        size_dict = {"small": [1024, 512, 256], "big": [1024, 512, 384]}
+        size = size_dict[size_arg]
+        self.dense = Dense(size[1], activation=tf.nn.relu)
         self.attention_net = (
             Attn_Net_Gated(L=size[1], D=size[2], dropout=dropout, n_classes=1)
             if gate
             else Attn_Net(L=size[1], D=size[2], dropout=dropout, n_classes=1)
         )
-        fc.append(self.attention_net)
-        self.attention_net = Sequential(fc)
         self.classifiers = Dense(n_classes)
-        instance_classifiers = [Dense(2) for _ in range(n_classes)]
-        self.instance_classifiers = Sequential(instance_classifiers)
+        self.instance_classifiers = [Dense(2) for _ in range(n_classes)]
         self.k_sample = k_sample
         self.instance_loss_fn = instance_loss_fn
         self.n_classes = n_classes
@@ -168,6 +157,7 @@ class CLAM_SB(tf.keras.Model):
 def model(args, params):
     model = CLAM_SB(
         k_sample=params["k_sample"],
+        dropout=params["dropout"],
     )
 
     model.compile(

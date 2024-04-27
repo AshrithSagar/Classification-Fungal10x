@@ -76,6 +76,7 @@ model:
   _select: (str) Model to use for training and inference. {CLAM_SB, EfficientNetB0, MobileNet, ResNet50, VGG16}.
   model-CLAM_SB:
     k_sample: null
+    dropout: null
     learning_rate: null
   model-EfficientNetB0:
     freeze_ratio: null

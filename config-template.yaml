@@ -32,6 +32,7 @@ heatmaps:
 model:
   _select: null
   model-CLAM_SB:
+    dropout: null
     k_sample: null
     learning_rate: null
   model-EfficientNetB0:
