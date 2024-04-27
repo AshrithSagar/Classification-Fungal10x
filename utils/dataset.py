@@ -223,6 +223,7 @@ class FungalDataLoader:
         self.x_train_annot_patches, _ = self.get_patches(self.x_train_annot)
         self.x_test_annot_patches, _ = self.get_patches(self.x_test_annot)
         self.annot_dataset_patches, _ = self.get_patches(self.annot_dataset)
+        print(f"Patches shape: {self.patches_shape}")
 
     def get_annotations(self, threshold=200):
         def get_annot(patches):

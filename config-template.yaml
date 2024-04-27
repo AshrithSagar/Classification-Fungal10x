@@ -6,6 +6,8 @@ dataset:
   downsample_factor: null
   downsample_size: null
   n_splits: null
+  overlap: null
+  patch_dims: null
   save_slides: null
   slide_dir: null
   use_augment: null
@@ -18,6 +20,7 @@ heatmaps:
   downsample_factor: null
   downsample_size: null
   file_extension: null
+  invert_preds: null
   overlap: null
   patch_size: null
   percentile_scale: null

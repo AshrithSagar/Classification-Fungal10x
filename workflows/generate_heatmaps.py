@@ -118,6 +118,7 @@ if __name__ == "__main__":
             percentile_score=h_args["percentile_score"],
             alpha=h_args["alpha"],
             blur=h_args["blur"],
+            invert_preds=h_args["invert_preds"],
             use_plt=h_args["use_plt"],
             save_ext=h_args["file_extension"],
         )

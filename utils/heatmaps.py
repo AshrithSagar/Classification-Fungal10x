@@ -156,6 +156,7 @@ class Heatmaps:
         percentile_score=False,
         alpha=0.4,
         blur=(112, 112),
+        invert_preds=True,
         use_plt=False,
         save_ext="png",
     ):
@@ -178,7 +179,7 @@ class Heatmaps:
         for slide, slide_name, preds, label in tqdm(
             zip(slides, slide_names, predictions, slide_labels)
         ):
-            cmap_labels = [(1 - pred) for pred in preds]
+            cmap_labels = [(1 - pred) for pred in preds] if invert_preds else preds
             slide = slide.numpy().astype(np.uint8)
 
             tilemap = self.make_tilemap(
