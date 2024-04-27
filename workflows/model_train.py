@@ -30,10 +30,10 @@ if __name__ == "__main__":
             data_dir=os.path.join(t_args["data_dir"], fold_dir),
             model_args=t_args,
             model_params=model_params,
+            model_name=m_args["_select"],
         )
         mt.load_dataset(t_args["subset_size"], t_args["use_augment"])
 
-        mt.model_name = m_args["_select"]
         mdl = ModelMaker(
             model_args=t_args,
             model_params=model_params,

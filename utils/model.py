@@ -38,6 +38,7 @@ class ModelTrainer:
         data_dir=None,
         model_args=None,
         model_params=None,
+        model_name=None,
         seed=42,
     ):
         """
@@ -63,9 +64,11 @@ class ModelTrainer:
         self.data_dir = data_dir
         self.model_args = model_args
         self.model_params = model_params
+        self.model_name = model_name
         self.image_dims = (224, 224)
         self.model = None
         self.results = {}
+        self.model_args.update({"model_name": model_name})
 
     def load_dataset(self, subset_size=None, use_augment=False):
         """
