@@ -562,3 +562,37 @@ class FungalDataLoader:
         df_dir_info["total"] = df_dir_info["nonfungal"] + df_dir_info["fungal"]
         print(df_dir_info)
         print(line_separator)
+
+
+class FungalDataLoaderMIL(FungalDataLoader):
+    def __init__(self, slide_dir, annot_dir, data_dir_name=None, seed=42):
+        super(FungalDataLoaderMIL, self).__init__(
+            slide_dir=slide_dir,
+            annot_dir=annot_dir,
+            data_dir_name=data_dir_name,
+            seed=seed,
+        )
+
+    def save_patches(self):
+        def save(data_dir, sub_dir, dataset, names, save_ext="png"):
+            sub_dir = os.path.join(data_dir, sub_dir)
+            os.makedirs(sub_dir, exist_ok=True)
+            names = [name.split(".")[0] for name in names]
+
+            for imgs, name in tqdm(zip(dataset, names)):
+                os.makedirs(os.path.join(sub_dir, name), exist_ok=True)
+                for idx, img in enumerate(imgs):
+                    img_file = os.path.join(sub_dir, name, f"{idx:03}.{save_ext}")
+                    pil_img = Image.fromarray((img.numpy() * 1).astype(np.uint8))
+                    pil_img.save(img_file)
+
+        if self.data_dir_name is None:
+            raise ValueError("Please provide a data_dir_name to save at")
+
+        self.data_dir = f"dataset/{self.data_dir_name}-MIL-{self.downsample_dims[0]}_{self.downsample_dims[1]}"
+        os.makedirs(self.data_dir, exist_ok=True)
+        print(f"Saving patches: {self.data_dir}")
+
+        save(self.data_dir, "train", self.x_train_patches, self.x_train_names)
+        save(self.data_dir, "test", self.x_test_patches, self.x_test_slide_names)
+        print(line_separator)
