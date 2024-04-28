@@ -61,7 +61,6 @@ model:
 summary:
   exp_names: null
 trainer:
-  MIL: null
   batch_size: null
   data_dir: null
   exp_base_dir: null
@@ -69,5 +68,6 @@ trainer:
   folds: null
   max_epochs: null
   overwrite_preds: null
+  patch_dims: null
   subset_size: null
   use_augment: null

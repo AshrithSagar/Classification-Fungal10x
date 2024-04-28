@@ -142,6 +142,15 @@ class ModelTrainer:
             Default is to use entire available dataset.
         """
 
+        def infer_labels(image, name):
+            name = tf.strings.as_string(name)
+            label = tf.cond(
+                tf.strings.regex_full_match(name, "^F.*"),
+                lambda: 1,
+                lambda: 0,
+            )
+            return image, label
+
         def load(data_dir, sub_dir):
             print(f"{sub_dir}:", end=" ")
             dataset_dir = os.path.join(data_dir, sub_dir)
@@ -164,6 +173,11 @@ class ModelTrainer:
         self.train_names = self.train_ds.class_names
         self.val_names = self.val_ds.class_names
         self.test_names = self.test_ds.class_names
+
+        batch_size = self.model_args["batch_size"]
+        self.train_ds = self.train_ds.map(infer_labels).batch(batch_size)
+        self.val_ds = self.val_ds.map(infer_labels).batch(batch_size)
+        self.test_ds = self.test_ds.map(infer_labels).batch(batch_size)
 
     def info(self):
         if self.MIL:
@@ -189,6 +203,7 @@ class ModelTrainer:
             callbacks=[epoch_time_callback] + self.callbacks_list,
             initial_epoch=self.epochs_done,
             epochs=self.model_args["max_epochs"],
+            batch_size=self.model_args["batch_size"],
         )
         toc = time.time()
 

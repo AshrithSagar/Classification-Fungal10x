@@ -132,7 +132,7 @@ class CLAM_SB(tf.keras.Model):
         else:
             results_dict = {}
 
-        M = tf.matmul(A, h, transpose_a=True)
+        M = tf.matmul(A, h)
         logits = self.classifiers(M)
         Y_hat = tf.math.top_k(logits, k=1)[-1]
         Y_prob = tf.nn.softmax(logits, axis=1)
@@ -180,7 +180,7 @@ def model(args, params):
         metrics=["accuracy"],
     )
 
-    model.build(input_shape=(None, 256, 256, 3))
+    model.build(input_shape=(args["batch_size"], *args["patch_dims"]))
 
     return model
 
