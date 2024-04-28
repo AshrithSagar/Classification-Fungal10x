@@ -177,6 +177,35 @@ dataset
     └── ...
 ```
 
+MIL directory structure:
+
+```markdown
+dataset
+└── <ds-name>-MIL-<downsample_dimensions>
+    ├── train
+    │   ├── F-slide-1
+    │   │   ├── F-patch-1.png
+    │   │   ├── F-patch-2.png
+    │   │   └── ...
+    │   ├── ...
+    │   ├── NF-slide-1
+    │   │   ├── NF-patch-1.png
+    │   │   ├── NF-patch-2.png
+    │   │   └── ...
+    │   └── ...
+    └── test
+        ├── F-slide-1
+        │   ├── F-patch-1.png
+        │   ├── F-patch-2.png
+        │   └── ...
+        ├── ...
+        ├── NF-slide-1
+        │   ├── NF-patch-1.png
+        │   ├── NF-patch-2.png
+        │   └── ...
+        └── ...
+```
+
 ### Workflows
 
 Run the different workflows using `python3 workflows/*.py` from the project directory.
@@ -185,6 +214,9 @@ Run the different workflows using `python3 workflows/*.py` from the project dire
 Create the dataset from the slides and annotations.
 Creates a patch level dataset from the slides and performs Stratified k-fold at the patch level.
 Mainly uses the `dataset` key in config.yaml.
+
+1. `create_MIL_dataset.py`:
+Creates an MIL dataset from the slides.
 
 1. `model_train.py`:
 Trains the model on the patch level dataset using the selected model.
