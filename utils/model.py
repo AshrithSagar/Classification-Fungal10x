@@ -39,6 +39,7 @@ class ModelTrainer:
         model_args=None,
         model_params=None,
         model_name=None,
+        image_dims=(224, 224),
         seed=42,
     ):
         """
@@ -49,6 +50,8 @@ class ModelTrainer:
         - data_dir: Directory containing the dataset.
         - model_args: Arguments for configuring the model.
         - model_params: Model-specific parameters.
+        - model_name: Name of the model
+        - image_dims: Image dimensions
         - seed: Random seed for reproducibility.
         """
 
@@ -65,7 +68,7 @@ class ModelTrainer:
         self.model_args = model_args
         self.model_params = model_params
         self.model_name = model_name
-        self.image_dims = (224, 224)
+        self.image_dims = image_dims
         self.model = None
         self.results = {}
         self.model_args.update({"model_name": model_name})
@@ -85,22 +88,69 @@ class ModelTrainer:
             labels="inferred",
             color_mode="rgb",
             batch_size=self.model_args["batch_size"],
-            image_size=self.image_dims,
+            image_size=self.image_dims[:2],
         )
         self.val_ds = tf.keras.preprocessing.image_dataset_from_directory(
             os.path.join(self.data_dir, "val"),
             labels="inferred",
             color_mode="rgb",
             batch_size=self.model_args["batch_size"],
-            image_size=self.image_dims,
+            image_size=self.image_dims[:2],
         )
         self.test_ds = tf.keras.preprocessing.image_dataset_from_directory(
             os.path.join(self.data_dir, "test"),
             labels="inferred",
             color_mode="rgb",
             batch_size=self.model_args["batch_size"],
-            image_size=self.image_dims,
+            image_size=self.image_dims[:2],
         )
+        self.class_names = self.train_ds.class_names
+        self.train_ds = self.train_ds.prefetch(tf.data.experimental.AUTOTUNE)
+
+        if subset_size:
+            self.train_ds = (
+                self.train_ds.unbatch()
+                .take(subset_size)
+                .batch(self.model_args["batch_size"])
+            )
+            self.val_ds = (
+                self.val_ds.unbatch()
+                .take(subset_size)
+                .batch(self.model_args["batch_size"])
+            )
+            self.test_ds = (
+                self.test_ds.unbatch()
+                .take(subset_size)
+                .batch(self.model_args["batch_size"])
+            )
+            print(f"Using subset of data for training of size: {subset_size}")
+
+    def load_MIL_dataset(self, subset_size=None, use_augment=False):
+        """
+        Parameters:
+        - Loads the dataset from the MIL data directory.
+        - subset_size: Optional, subset of the dataset to use.
+            Default is to use entire available dataset.
+        """
+
+        def load_dataset(data_dir, sub_dir):
+            print(f"{sub_dir}:", end=" ")
+            dataset_dir = os.path.join(data_dir, sub_dir)
+            dataset = tf.keras.preprocessing.image_dataset_from_directory(
+                dataset_dir,
+                labels="inferred",
+                color_mode="rgb",
+                batch_size=self.model_args["batch_size"],
+                image_size=self.image_dims[:2],
+                shuffle=False,
+            )
+            return dataset
+
+        print(f"Loading MIL dataset from: {self.data_dir}")
+        train_ds = load_dataset(self.data_dir, "train")
+        self.test_ds = load_dataset(self.data_dir, "test")
+
+        self.train_ds, self.val_ds = train_ds, train_ds
         self.class_names = self.train_ds.class_names
         self.train_ds = self.train_ds.prefetch(tf.data.experimental.AUTOTUNE)
 

@@ -99,6 +99,7 @@ model:
     patience: null
     start_from_epoch: null
 trainer:
+  MIL: (bool) Whether the dataset is of Multiple Instance Learning type.
   batch_size: (int) Batch size for training.
   data_dir: (path) Path to the directory containing the dataset. Should likely be as some dataset/{data_dir_name}/; Should contain within as /fold-*/{train, val, test}/{fungal, non-fungal}/; Refer to the directory structure.
   exp_base_dir: (path) Base directory containing all the experiment folders. Usually set to experiments/.

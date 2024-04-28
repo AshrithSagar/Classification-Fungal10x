@@ -35,6 +35,9 @@ model:
     dropout: null
     k_sample: null
     learning_rate: null
+    loss_weights:
+      bag: null
+      instance: null
   model-EfficientNetB0:
     freeze_ratio: null
     learning_rate: null
@@ -58,6 +61,7 @@ model:
 summary:
   exp_names: null
 trainer:
+  MIL: null
   batch_size: null
   data_dir: null
   exp_base_dir: null

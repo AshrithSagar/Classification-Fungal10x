@@ -12,6 +12,7 @@ from utils.model import ModelMaker, ModelTrainer
 
 if __name__ == "__main__":
     g_args = load_config(config_file="config.yaml", key="gpu")
+    d_args = load_config(config_file="config.yaml", key="dataset")
     m_args = load_config(config_file="config.yaml", key="model")
     t_args = load_config(config_file="config.yaml", key="trainer")
 
@@ -31,8 +32,12 @@ if __name__ == "__main__":
             model_args=t_args,
             model_params=model_params,
             model_name=m_args["_select"],
+            image_dims=d_args["patch_dims"],
         )
-        mt.load_dataset(t_args["subset_size"], t_args["use_augment"])
+        if t_args["MIL"]:
+            mt.load_MIL_dataset(t_args["subset_size"])
+        else:
+            mt.load_dataset(t_args["subset_size"], t_args["use_augment"])
 
         mdl = ModelMaker(
             model_args=t_args,
