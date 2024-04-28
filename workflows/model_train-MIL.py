@@ -29,11 +29,9 @@ if __name__ == "__main__":
         model_params=model_params,
         model_name=m_args["_select"],
         image_dims=d_args["patch_dims"],
+        MIL=True,
     )
-    if t_args["MIL"]:
-        mt.load_MIL_dataset(t_args["subset_size"])
-    else:
-        mt.load_dataset(t_args["subset_size"], t_args["use_augment"])
+    mt.load_dataset(t_args["subset_size"], t_args["use_augment"])
 
     mdl = ModelMaker(
         model_args=t_args,

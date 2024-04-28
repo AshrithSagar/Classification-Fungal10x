@@ -5,7 +5,6 @@ Model CLAM SB
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras import Sequential
 from tensorflow.keras.layers import Dropout, Dense
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 from tensorflow.keras.optimizers import Adam
@@ -56,6 +55,8 @@ class CLAM_SB(tf.keras.Model):
         instance_eval=True,
         attention_only=False,
         return_features=False,
+        bag_loss_weight=None,
+        inst_loss_weight=None,
     ):
         super(CLAM_SB, self).__init__()
         self.k_sample = k_sample
@@ -64,9 +65,14 @@ class CLAM_SB(tf.keras.Model):
         self.instance_eval = instance_eval
         self.attention_only = attention_only
         self.return_features = return_features
+        self.bag_loss_weight = bag_loss_weight
+        self.inst_loss_weight = inst_loss_weight
 
         size_dict = {"small": [1024, 512, 256], "big": [1024, 512, 384]}
         size = size_dict[size_arg]
+        self.feature_extractor = ResNet50(
+            weights="imagenet", include_top=False, pooling="avg"
+        )
         self.dense = Dense(size[1], activation=tf.nn.relu)
         self.attention_net = (
             Attn_Net_Gated(L=size[1], D=size[2], dropout=dropout, n_classes=1)
@@ -107,10 +113,7 @@ class CLAM_SB(tf.keras.Model):
 
     def call(self, x, training=False):
 
-        feature_extractor = ResNet50(
-            weights="imagenet", include_top=False, pooling="avg"
-        )
-        h = feature_extractor(preprocess_input(x))
+        h = self.feature_extractor(preprocess_input(x))
         h = self.dense(h)
         A, h = self.attention_net(h)
         A = tf.transpose(A)
@@ -143,11 +146,32 @@ class CLAM_SB(tf.keras.Model):
         else:
             return tf.argmax(Y_prob, axis=-1)
 
+    def train_step(self, data):
+        x, y = data
+        with tf.GradientTape() as tape:
+            y_pred, instance_loss = self(x, training=True)
+            bag_loss = self.compute_loss(y=y, y_pred=y_pred)
+            loss = (
+                self.bag_loss_weight * bag_loss + self.inst_loss_weight * instance_loss
+            )
+
+        trainable_vars = self.trainable_variables
+        gradients = tape.gradient(loss, trainable_vars)
+        self.optimizer.apply_gradients(zip(gradients, trainable_vars))
+        for metric in self.metrics:
+            if metric.name == "loss":
+                metric.update_state(loss)
+            else:
+                metric.update_state(y, y_pred)
+        return {m.name: m.result() for m in self.metrics}
+
 
 def model(args, params):
     model = CLAM_SB(
         k_sample=params["k_sample"],
         dropout=params["dropout"],
+        bag_loss_weight=params["loss_weights"]["bag"],
+        inst_loss_weight=params["loss_weights"]["instance"],
     )
 
     model.compile(

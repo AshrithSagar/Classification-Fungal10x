@@ -40,6 +40,7 @@ class ModelTrainer:
         model_params=None,
         model_name=None,
         image_dims=(224, 224),
+        MIL=None,
         seed=42,
     ):
         """
@@ -52,6 +53,7 @@ class ModelTrainer:
         - model_params: Model-specific parameters.
         - model_name: Name of the model
         - image_dims: Image dimensions
+        - MIL: Whether MIL dataset is used
         - seed: Random seed for reproducibility.
         """
 
@@ -69,14 +71,39 @@ class ModelTrainer:
         self.model_params = model_params
         self.model_name = model_name
         self.image_dims = image_dims
+        self.MIL = MIL
         self.model = None
         self.results = {}
         self.model_args.update({"model_name": model_name})
 
     def load_dataset(self, subset_size=None, use_augment=False):
+        if self.MIL:
+            self.load_MIL_dataset(subset_size, use_augment)
+        else:
+            self.load_patches_dataset(subset_size, use_augment)
+
+        if subset_size:
+            self.train_ds = (
+                self.train_ds.unbatch()
+                .take(subset_size)
+                .batch(self.model_args["batch_size"])
+            )
+            self.val_ds = (
+                self.val_ds.unbatch()
+                .take(subset_size)
+                .batch(self.model_args["batch_size"])
+            )
+            self.test_ds = (
+                self.test_ds.unbatch()
+                .take(subset_size)
+                .batch(self.model_args["batch_size"])
+            )
+            print(f"Using subset of data for training of size: {subset_size}")
+
+    def load_patches_dataset(self, subset_size=None, use_augment=False):
         """
         Parameters:
-        - Loads the dataset from the data directory.
+        - Loads the patches dataset from the data directory.
         - subset_size: Optional, subset of the dataset to use.
             Default is to use entire available dataset.
         - use_augment: Optional, whether to use the augmented dataset.
@@ -107,24 +134,6 @@ class ModelTrainer:
         self.class_names = self.train_ds.class_names
         self.train_ds = self.train_ds.prefetch(tf.data.experimental.AUTOTUNE)
 
-        if subset_size:
-            self.train_ds = (
-                self.train_ds.unbatch()
-                .take(subset_size)
-                .batch(self.model_args["batch_size"])
-            )
-            self.val_ds = (
-                self.val_ds.unbatch()
-                .take(subset_size)
-                .batch(self.model_args["batch_size"])
-            )
-            self.test_ds = (
-                self.test_ds.unbatch()
-                .take(subset_size)
-                .batch(self.model_args["batch_size"])
-            )
-            print(f"Using subset of data for training of size: {subset_size}")
-
     def load_MIL_dataset(self, subset_size=None, use_augment=False):
         """
         Parameters:
@@ -133,7 +142,7 @@ class ModelTrainer:
             Default is to use entire available dataset.
         """
 
-        def load_dataset(data_dir, sub_dir):
+        def load(data_dir, sub_dir):
             print(f"{sub_dir}:", end=" ")
             dataset_dir = os.path.join(data_dir, sub_dir)
             dataset = tf.keras.preprocessing.image_dataset_from_directory(
@@ -147,33 +156,22 @@ class ModelTrainer:
             return dataset
 
         print(f"Loading MIL dataset from: {self.data_dir}")
-        train_ds = load_dataset(self.data_dir, "train")
-        self.test_ds = load_dataset(self.data_dir, "test")
+        train_ds = load(self.data_dir, "train")
+        self.test_ds = load(self.data_dir, "test")
 
         self.train_ds, self.val_ds = train_ds, train_ds
-        self.class_names = self.train_ds.class_names
-        self.train_ds = self.train_ds.prefetch(tf.data.experimental.AUTOTUNE)
 
-        if subset_size:
-            self.train_ds = (
-                self.train_ds.unbatch()
-                .take(subset_size)
-                .batch(self.model_args["batch_size"])
-            )
-            self.val_ds = (
-                self.val_ds.unbatch()
-                .take(subset_size)
-                .batch(self.model_args["batch_size"])
-            )
-            self.test_ds = (
-                self.test_ds.unbatch()
-                .take(subset_size)
-                .batch(self.model_args["batch_size"])
-            )
-            print(f"Using subset of data for training of size: {subset_size}")
+        self.train_names = self.train_ds.class_names
+        self.val_names = self.val_ds.class_names
+        self.test_names = self.test_ds.class_names
 
     def info(self):
-        print(f"Classes: {self.class_names}")
+        if self.MIL:
+            print(f"Train: {self.train_names}")
+            print(f"Val: {self.val_names}")
+            print(f"Test: {self.test_names}")
+        else:
+            print(f"Classes: {self.class_names}")
 
         self.model.summary()
         model_summary_file = os.path.join(self.exp_dir, "model_summary.txt")

@@ -99,7 +99,6 @@ model:
     patience: null
     start_from_epoch: null
 trainer:
-  MIL: (bool) Whether the dataset is of Multiple Instance Learning type.
   batch_size: (int) Batch size for training.
   data_dir: (path) Path to the directory containing the dataset. Should likely be as some dataset/{data_dir_name}/; Should contain within as /fold-*/{train, val, test}/{fungal, non-fungal}/; Refer to the directory structure.
   exp_base_dir: (path) Base directory containing all the experiment folders. Usually set to experiments/.
@@ -216,12 +215,15 @@ Create the dataset from the slides and annotations.
 Creates a patch level dataset from the slides and performs Stratified k-fold at the patch level.
 Mainly uses the `dataset` key in config.yaml.
 
-1. `create_MIL_dataset.py`:
+1. `create_dataset-MIL.py`:
 Creates an MIL dataset from the slides.
 
 1. `model_train.py`:
 Trains the model on the patch level dataset using the selected model.
 The `trainer` key in `config.yaml` is used for training configurations, while the `model` key is utilised for selecting models and specifying their parameters.
+
+1. `model_train-MIL.py`:
+Train on an MIL dataset.
 
 1. `generate_heatmaps.py`:
 Generate heatmaps for the slides using the predictions of the trained model.
