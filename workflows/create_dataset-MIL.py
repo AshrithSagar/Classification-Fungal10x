@@ -7,6 +7,8 @@ import sys
 
 sys.path.append(os.getcwd())
 import tensorflow as tf
+from tensorflow.keras.applications import ResNet50
+from tensorflow.keras.applications.resnet import preprocess_input
 
 from utils.config import GPUHandler, load_config
 from utils.dataset import FungalDataLoaderMIL
@@ -38,3 +40,6 @@ if __name__ == "__main__":
     )
     fdl.extract_patches(size=d_args["patch_dims"], overlap=d_args["overlap"])
     fdl.save_patches()
+
+    feature_extractor = ResNet50(weights="imagenet", include_top=False, pooling="avg")
+    fdl.extract_features(feature_extractor)

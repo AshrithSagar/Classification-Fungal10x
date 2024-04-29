@@ -572,6 +572,40 @@ class FungalDataLoaderMIL(FungalDataLoader):
             data_dir_name=data_dir_name,
             seed=seed,
         )
+        self.feature_extractor = None
+
+    def create_kfold_splits(self, n_splits=5, run_only=None):
+        kfold = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=self.seed)
+
+    def extract_features(self, feature_extractor=None):
+        def extract(dataset, feature_extractor):
+            dataset = tf.data.Dataset.from_tensor_slices(dataset)
+            features = dataset.map(lambda patch: feature_extractor(patch))
+            return features
+
+        feature_extractor = feature_extractor or self.feature_extractor
+        self.train_feats = extract(self.x_train_patches, feature_extractor)
+        self.test_feats = extract(self.x_test_patches, feature_extractor)
+
+    def save_features(self):
+        def save(data_dir, sub_dir, features, names):
+            sub_dir = os.path.join(data_dir, sub_dir)
+            os.makedirs(sub_dir, exist_ok=True)
+            names = [name.split(".")[0] for name in names]
+
+            for feats, name in tqdm(zip(features, names)):
+                file = os.path.join(sub_dir, name, f"{name}.npy")
+
+        if self.data_dir_name is None:
+            raise ValueError("Please provide a data_dir_name to save at")
+
+        self.data_dir = f"dataset/{self.data_dir_name}-MIL-{self.downsample_dims[0]}_{self.downsample_dims[1]}"
+        os.makedirs(self.data_dir, exist_ok=True)
+        print(f"Saving patches: {self.data_dir}")
+
+        save(self.data_dir, "train", self.train_feats, self.x_train_names)
+        save(self.data_dir, "test", self.test_feats, self.x_test_slide_names)
+        print(line_separator)
 
     def save_patches(self):
         def save(data_dir, sub_dir, dataset, names, save_ext="png"):
