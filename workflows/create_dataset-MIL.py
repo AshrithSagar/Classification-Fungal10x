@@ -38,7 +38,7 @@ if __name__ == "__main__":
         size=d_args["downsample_size"],
         factor=d_args["downsample_factor"],
     )
-    fdl.extract_patches(size=d_args["patch_dims"], overlap=d_args["overlap"])
+    fdl.extract_patches(size=d_args["patch_size"], overlap=d_args["overlap"])
     fdl.save_patches()
 
     feature_extractor = ResNet50(weights="imagenet", include_top=False, pooling="avg")

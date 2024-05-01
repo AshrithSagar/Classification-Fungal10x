@@ -43,7 +43,7 @@ if __name__ == "__main__":
             factor=h_args["downsample_factor"],
         )
         fdl.slide_dataset = fdl.downsample(fdl.slide_dataset)
-        fdl.get_stride(h_args["patch_size"][0:2], h_args["overlap"])
+        fdl.get_stride(h_args["patch_dims"][0:2], h_args["overlap"])
         all_patches, fdl.patches_shape = fdl.get_patches(fdl.slide_dataset)
         slides = fdl.annot_dataset
         slide_names = fdl.slide_names
@@ -116,7 +116,7 @@ if __name__ == "__main__":
             predictions=predictions,
             slide_labels=slide_labels,
             patches_shape=fdl.patches_shape,
-            patch_size=h_args["patch_size"],
+            patch_size=h_args["patch_dims"],
             cmap=h_args["cmap"],
             overlap=h_args["overlap"],
             percentile_scale=h_args["percentile_scale"],

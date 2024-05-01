@@ -7,7 +7,7 @@ dataset:
   downsample_size: null
   n_splits: null
   overlap: null
-  patch_dims: null
+  patch_size: null
   save_slides: null
   slide_dir: null
   use_augment: null
@@ -22,7 +22,7 @@ heatmaps:
   file_extension: null
   invert_preds: null
   overlap: null
-  patch_size: null
+  patch_dims: null
   percentile_scale: null
   percentile_score: null
   save_dir: null

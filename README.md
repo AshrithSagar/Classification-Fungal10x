@@ -50,7 +50,7 @@ dataset:
   downsample_size: (tuple[int, int]) Downsample slides to this size.
   n_splits: (int) Number of splits for cross-validation.
   overlap: (bool) Overlap factor for the extracting patches. Should be between 0 and 1.
-  patch_dims: (tuple[int, int]) Patch size for the patches.
+  patch_size: (tuple[int, int]) Patch size for the patches.
   save_slides: (bool) Whether to save slides, in dataset/{data_dir_name}-slides/;
   slide_dir: (path) Slides directory path. Corresponding annotations should be in annot_dir.
   use_augment: (bool) Whether to use data augmentation at patch level for the train split. Preferably always use as True.
@@ -65,7 +65,7 @@ heatmaps:
   file_extension: (str) File extension for the heatmap images to be saved.
   invert_preds: (bool) Whether to invert the predictions before making the heatmaps. Default is true.
   overlap: (float) Overlap factor for the heatmap patches. Should be between 0 and 1.
-  patch_size: (tuple[int, int, int]) Patch size for the heatmap.
+  patch_dims: (tuple[int, int, int]) Patch dimensions for the heatmap.
   percentile_scale: (tuple[int, int]) Scale the heatmap values to percentile. Uses numpy.percentile();
   percentile_score: (bool) Percentile score for scaling the heatmap values. Uses scipy.stats.percentileofscore();
   save_dir: (path) Directory to save the heatmap images. Will be saved at {exp_base_dir}/{exp_name}/{fold-*}/{save_dir}/;

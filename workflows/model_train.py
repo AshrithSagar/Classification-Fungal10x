@@ -32,7 +32,7 @@ if __name__ == "__main__":
             model_args=t_args,
             model_params=model_params,
             model_name=m_args["_select"],
-            image_dims=d_args["patch_dims"],
+            image_dims=d_args["patch_size"],
             MIL=False,
         )
         mt.load_dataset(t_args["subset_size"], t_args["use_augment"])
