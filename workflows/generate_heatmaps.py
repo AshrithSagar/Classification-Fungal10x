@@ -75,7 +75,7 @@ if __name__ == "__main__":
         print(f"Running on fold: {fold}")
 
         exp_dir = os.path.join(t_args["exp_base_dir"], t_args["exp_name"], fold_dir)
-        preds_filename = f"{h_args['predictions_file']}.csv"
+        preds_filename = f"{t_args['predictions_file']}.csv"
         preds_file = os.path.join(exp_dir, preds_filename)
 
         if t_args["overwrite_preds"] or not os.path.exists(preds_file):

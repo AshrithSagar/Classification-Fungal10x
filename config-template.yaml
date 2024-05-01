@@ -25,7 +25,6 @@ heatmaps:
   patch_size: null
   percentile_scale: null
   percentile_score: null
-  predictions_file: null
   save_dir: null
   source_dir: null
   source_dir_annot: null
@@ -70,5 +69,6 @@ trainer:
   max_epochs: null
   overwrite_preds: null
   patch_dims: null
+  predictions_file: null
   subset_size: null
   use_augment: null

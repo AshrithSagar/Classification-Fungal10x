@@ -68,7 +68,6 @@ heatmaps:
   patch_size: (tuple[int, int, int]) Patch size for the heatmap.
   percentile_scale: (tuple[int, int]) Scale the heatmap values to percentile. Uses numpy.percentile();
   percentile_score: (bool) Percentile score for scaling the heatmap values. Uses scipy.stats.percentileofscore();
-  predictions_file: (string) Filename of the predictions CSV file, without the extension.
   save_dir: (path) Directory to save the heatmap images. Will be saved at {exp_base_dir}/{exp_name}/{fold-*}/{save_dir}/;
   source_dir: (path) Path to the directory containing the slides. Will be used to get the predictions for the heatmap.
   source_dir_annot: (path) Path to the directory containing the annotations corresponding to the slides in source_dir. Slides should have the same names as in source_dir. Will be used to overlap with the heatmap for easier visualisation. Set to null to use source_dir slides itself for heatmaps.
@@ -107,6 +106,8 @@ trainer:
   folds: (list[int]) List of folds to be considered. Zero-indexed.
   max_epochs: (int) Maximum number of epochs to train the model.
   overwrite_preds: (bool) Overwrite the predictions if already present. Checks for {exp_base_dir}/{exp_name}/{fold-*}/preds.csv;
+  patch_dims: (tuple[int, int, int]) Patch dimensions of the dataset.
+  predictions_file: (string) Filename of the predictions CSV file, without the extension.
   subset_size: (int) Subset size of the dataset to be used for training. Used for trial purposes. Set to null to use the entire dataset.
   use_augment: (bool) Whether to use the augmented dataset for training present at train/, or use train_unaugmented/ for training. Whole path:- dataset/{data_dir_name}/fold-*/{train,train_unaugmented}/;
 ```
