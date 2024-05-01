@@ -79,6 +79,7 @@ if __name__ == "__main__":
         preds_file = os.path.join(exp_dir, preds_filename)
 
         if t_args["overwrite_preds"] or not os.path.exists(preds_file):
+            print(f"Generating predictions to {preds_filename}")
             model_params = m_args[f'model-{m_args["_select"]}']
             mt = ModelTrainer(
                 exp_dir=exp_dir,
@@ -106,6 +107,7 @@ if __name__ == "__main__":
             )
 
         else:
+            print(f"Loading predictions from {preds_filename}")
             predictions = np.loadtxt(preds_file, delimiter=",")
 
         hm = Heatmaps(exp_dir)
