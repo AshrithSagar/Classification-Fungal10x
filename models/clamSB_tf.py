@@ -6,7 +6,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.layers import Dropout, Dense
-from tensorflow.keras.losses import SparseCategoricalCrossentropy
+from tensorflow.keras.losses import BinaryCrossentropy
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.applications import ResNet50
 from tensorflow.keras.applications.resnet import preprocess_input
@@ -51,7 +51,7 @@ class CLAM_SB(tf.keras.Model):
         dropout=False,
         k_sample=8,
         n_classes=2,
-        instance_loss_fn=SparseCategoricalCrossentropy(from_logits=True),
+        instance_loss_fn=BinaryCrossentropy(from_logits=True),
         instance_eval=True,
         attention_only=False,
         return_features=False,
@@ -93,10 +93,10 @@ class CLAM_SB(tf.keras.Model):
     def inst_eval(self, A, h):
 
         # Get top & bottom k_sample attention scores
-        top_p_ids = tf.math.top_k(A, k=self.k_sample)[-1][-1]
-        top_p = tf.gather(h, top_p_ids)
-        top_n_ids = tf.math.top_k(-A, k=self.k_sample)[-1][-1]
-        top_n = tf.gather(h, top_n_ids)
+        top_p_indices = tf.argsort(A, direction="DESCENDING")[:, : self.k_sample]
+        top_n_indices = tf.argsort(A, direction="ASCENDING")[:, : self.k_sample]
+        top_p = tf.gather(h, top_p_indices, axis=1)
+        top_n = tf.gather(h, top_n_indices, axis=1)
 
         # Assign pseudo-labels
         p_targets = self.create_positive_targets(self.k_sample)
@@ -106,6 +106,7 @@ class CLAM_SB(tf.keras.Model):
 
         # Get predictions for all instances
         logits = self.instance_classifiers(all_instances)
+        logits = logits.reshape((2 * self.k_sample))
         all_preds = tf.math.top_k(logits, k=1)[-1]
         instance_loss = self.instance_loss_fn(all_targets, logits)
 
@@ -132,6 +133,8 @@ class CLAM_SB(tf.keras.Model):
         else:
             results_dict = {}
 
+        A = A.reshape((1, 88))
+        h = h.reshape((88, 512))
         M = tf.matmul(A, h)
         logits = self.classifiers(M)
         Y_hat = tf.math.top_k(logits, k=1)[-1]
@@ -181,7 +184,7 @@ def model(args, params):
     )
 
     # model.build(input_shape=(args["batch_size"], *args["patch_dims"]))
-    model.build(input_shape=(88, 1024))
+    model.build(input_shape=(None, 88, 1024))
 
     return model
 

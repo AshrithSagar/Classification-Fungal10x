@@ -5,9 +5,13 @@ model_train-MIL.py
 import os
 import sys
 
+from tensorflow.python.ops.numpy_ops import np_config
+
 sys.path.append(os.getcwd())
 from utils.config import GPUHandler, load_config
 from utils.model import ModelMaker, ModelTrainer
+
+np_config.enable_numpy_behavior()
 
 
 if __name__ == "__main__":
