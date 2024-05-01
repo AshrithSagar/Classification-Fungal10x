@@ -25,6 +25,7 @@ heatmaps:
   patch_size: null
   percentile_scale: null
   percentile_score: null
+  predictions_file: null
   save_dir: null
   source_dir: null
   source_dir_annot: null

@@ -48,6 +48,7 @@ if __name__ == "__main__":
         slides = fdl.slide_dataset
         slide_names = fdl.slide_names
         slide_labels = fdl.slide_labels
+        print(line_separator)
 
     else:
         print(f'Loading test slides from directory: {d_args["slide_dir"]}')
@@ -68,14 +69,14 @@ if __name__ == "__main__":
         slides = fdl.x_test_annot
         slide_names = fdl.x_test_slide_names
         slide_labels = fdl.y_test_slides
-    print(line_separator)
 
     for fold in t_args["folds"]:
         fold_dir = f"fold_{fold}"
         print(f"Running on fold: {fold}")
 
         exp_dir = os.path.join(t_args["exp_base_dir"], t_args["exp_name"], fold_dir)
-        preds_file = os.path.join(exp_dir, "preds.csv")
+        preds_filename = f"{h_args['predictions_file']}.csv"
+        preds_file = os.path.join(exp_dir, preds_filename)
 
         if t_args["overwrite_preds"] or not os.path.exists(preds_file):
             model_params = m_args[f'model-{m_args["_select"]}']
@@ -98,7 +99,11 @@ if __name__ == "__main__":
                 mdl.epochs_done,
             )
             mt.info()
-            predictions = mt.predict(all_patches, overwrite=t_args["overwrite_preds"])
+            predictions = mt.predict(
+                all_patches,
+                save_file=preds_filename,
+                overwrite=t_args["overwrite_preds"],
+            )
 
         else:
             predictions = np.loadtxt(preds_file, delimiter=",")
