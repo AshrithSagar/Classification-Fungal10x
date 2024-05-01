@@ -603,8 +603,7 @@ class FungalDataLoaderMIL(FungalDataLoader):
                     features = feature_extractor(inputs)
                     all_features.append(features.cpu().numpy())
 
-            all_features = np.concatenate(all_features, axis=0)
-            return all_features
+            return np.asarray(all_features)
 
         feature_extractor.eval()
         feature_extractor.to(device)

@@ -31,7 +31,7 @@ if __name__ == "__main__":
         image_dims=d_args["patch_size"],
         MIL=True,
     )
-    mt.load_dataset(t_args["subset_size"], t_args["use_augment"])
+    mt.load_MIL_features(t_args["subset_size"])
 
     mdl = ModelMaker(
         model_args=t_args,

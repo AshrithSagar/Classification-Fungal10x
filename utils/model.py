@@ -179,6 +179,35 @@ class ModelTrainer:
         self.val_ds = self.val_ds.map(infer_labels).batch(batch_size)
         self.test_ds = self.test_ds.map(infer_labels).batch(batch_size)
 
+    def load_MIL_features(self, subset_size=None):
+        """
+        Parameters:
+        - Loads the features from the MIL features directory.
+        - subset_size: Optional, subset of the dataset to use.
+            Default is to use entire available dataset.
+        """
+
+        def infer_label(filename):
+            if filename.startswith("F"):
+                return 1
+            elif filename.startswith("N"):
+                return 0
+            return None
+
+        def load(data_dir, sub_dir):
+            dataset_dir = os.path.join(data_dir, sub_dir)
+            print(dataset_dir)
+            files = [file for file in os.listdir(dataset_dir) if file.endswith(".npy")]
+            dataset = [
+                (np.load(os.path.join(dataset_dir, file)), infer_label(file))
+                for file in files
+            ]
+            return dataset
+
+        print(f"Loading MIL features from: {os.path.basename(self.data_dir)}")
+        self.train_ds = load(self.data_dir, "train")
+        self.test_ds = load(self.data_dir, "test")
+
     def info(self):
         if self.MIL:
             print(f"Train: {self.train_names}")
