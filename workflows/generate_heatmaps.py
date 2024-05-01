@@ -45,7 +45,7 @@ if __name__ == "__main__":
         fdl.slide_dataset = fdl.downsample(fdl.slide_dataset)
         fdl.get_stride(h_args["patch_size"][0:2], h_args["overlap"])
         all_patches, fdl.patches_shape = fdl.get_patches(fdl.slide_dataset)
-        slides = fdl.slide_dataset
+        slides = fdl.annot_dataset
         slide_names = fdl.slide_names
         slide_labels = fdl.slide_labels
         print(line_separator)
