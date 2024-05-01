@@ -9,8 +9,10 @@ import sys
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+import torch
 from PIL import Image
 from sklearn.model_selection import StratifiedKFold, train_test_split
+from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
 
 sys.path.append(os.getcwd())
@@ -587,6 +589,48 @@ class FungalDataLoaderMIL(FungalDataLoader):
         self.train_feats = extract(self.x_train_patches, feature_extractor)
         self.test_feats = extract(self.x_test_patches, feature_extractor)
 
+    def extract_features_torch(self, feature_extractor, device=None):
+        def extract(dataset, feature_extractor):
+            loader = DataLoader(dataset=dataset.numpy(), batch_size=1, shuffle=False)
+
+            all_features = []
+            for batch in tqdm(loader, desc="Extracting Features"):
+                inputs = batch.to(device, non_blocking=True)
+                inputs = inputs.float()
+                inputs = inputs.reshape([-1, 3, 256, 256])
+
+                with torch.no_grad():
+                    features = feature_extractor(inputs)
+                    all_features.append(features.cpu().numpy())
+
+            all_features = np.concatenate(all_features, axis=0)
+            return all_features
+
+        feature_extractor.eval()
+        feature_extractor.to(device)
+        self.train_feats = extract(self.x_train_patches, feature_extractor)
+        self.test_feats = extract(self.x_test_patches, feature_extractor)
+
+    def save_features_torch(self):
+        def save(data_dir, sub_dir, features, names):
+            sub_dir = os.path.join(data_dir, sub_dir)
+            os.makedirs(sub_dir, exist_ok=True)
+            names = [name.split(".")[0] for name in names]
+
+            for feats, name in tqdm(zip(features, names)):
+                file = os.path.join(sub_dir, f"{name}.npy")
+                np.save(file, feats)
+
+        if self.data_dir_name is None:
+            raise ValueError("Please provide a data_dir_name to save at")
+
+        self.data_dir = f"dataset/features-{self.data_dir_name}-MIL-{self.downsample_dims[0]}_{self.downsample_dims[1]}"
+        os.makedirs(self.data_dir, exist_ok=True)
+
+        save(self.data_dir, "train", self.train_feats, self.x_train_names)
+        save(self.data_dir, "test", self.test_feats, self.x_test_slide_names)
+        print(line_separator)
+
     def save_features(self):
         def save(data_dir, sub_dir, features, names):
             sub_dir = os.path.join(data_dir, sub_dir)
@@ -601,7 +645,7 @@ class FungalDataLoaderMIL(FungalDataLoader):
 
         self.data_dir = f"dataset/{self.data_dir_name}-MIL-{self.downsample_dims[0]}_{self.downsample_dims[1]}"
         os.makedirs(self.data_dir, exist_ok=True)
-        print(f"Saving patches: {self.data_dir}")
+        print(f"Saving features: {self.data_dir}")
 
         save(self.data_dir, "train", self.train_feats, self.x_train_names)
         save(self.data_dir, "test", self.test_feats, self.x_test_slide_names)
