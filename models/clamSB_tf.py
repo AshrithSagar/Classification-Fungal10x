@@ -113,7 +113,7 @@ class CLAM_SB(tf.keras.Model):
 
     def call(self, x, training=False):
 
-        h = self.feature_extractor(preprocess_input(x))
+        # h = self.feature_extractor(preprocess_input(x))
         h = self.dense(h)
         A, h = self.attention_net(h)
         A = tf.transpose(A)

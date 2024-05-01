@@ -208,13 +208,14 @@ class ModelTrainer:
         self.train_ds = load(self.data_dir, "train")
         self.test_ds = load(self.data_dir, "test")
 
-    def info(self):
-        if self.MIL:
-            print(f"Train: {self.train_names}")
-            print(f"Val: {self.val_names}")
-            print(f"Test: {self.test_names}")
-        else:
-            print(f"Classes: {self.class_names}")
+    def info(self, verbose=False):
+        if verbose:
+            if self.MIL:
+                print(f"Train: {self.train_names}")
+                print(f"Val: {self.val_names}")
+                print(f"Test: {self.test_names}")
+            else:
+                print(f"Classes: {self.class_names}")
 
         self.model.summary()
         model_summary_file = os.path.join(self.exp_dir, "model_summary.txt")
