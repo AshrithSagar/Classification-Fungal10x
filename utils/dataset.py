@@ -624,7 +624,7 @@ class FungalDataLoaderMIL(FungalDataLoader):
         if self.data_dir_name is None:
             raise ValueError("Please provide a data_dir_name to save at")
 
-        self.data_dir = f"dataset/features-{self.data_dir_name}-MIL-{self.downsample_dims[0]}_{self.downsample_dims[1]}"
+        self.data_dir = f"dataset/{self.data_dir_name}-MIL-features-{self.downsample_dims[0]}_{self.downsample_dims[1]}"
         os.makedirs(self.data_dir, exist_ok=True)
 
         save(self.data_dir, "train", self.train_feats, self.x_train_names)
