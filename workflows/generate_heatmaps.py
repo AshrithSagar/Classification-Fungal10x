@@ -66,7 +66,7 @@ if __name__ == "__main__":
         fdl.extract_patches()
         fdl.get_annotations()
         all_patches = fdl.x_test_patches
-        slides = fdl.x_test_annot
+        slides = fdl.x_test_annot.numpy()
         slide_names = fdl.x_test_slide_names
         slide_labels = fdl.y_test_slides
 

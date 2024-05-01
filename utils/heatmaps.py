@@ -180,7 +180,7 @@ class Heatmaps:
             zip(slides, slide_names, predictions, slide_labels)
         ):
             cmap_labels = [(1 - pred) for pred in preds] if invert_preds else preds
-            slide = slide.numpy().astype(np.uint8)
+            slide = slide.astype(np.uint8)
 
             tilemap = self.make_tilemap(
                 cmap_labels,
