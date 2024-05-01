@@ -179,7 +179,7 @@ class ModelTrainer:
         self.val_ds = self.val_ds.map(infer_labels).batch(batch_size)
         self.test_ds = self.test_ds.map(infer_labels).batch(batch_size)
 
-    def load_MIL_features(self, subset_size=None):
+    def load_MIL_features(self, subset_size=None, batch_size=32, shuffle=True):
         """
         Parameters:
         - Loads the features from the MIL features directory.
@@ -194,19 +194,27 @@ class ModelTrainer:
                 return 0
             return None
 
-        def load(data_dir, sub_dir):
+        def load(data_dir, sub_dir, batch_size=32, shuffle=True):
             dataset_dir = os.path.join(data_dir, sub_dir)
-            print(dataset_dir)
             files = [file for file in os.listdir(dataset_dir) if file.endswith(".npy")]
-            dataset = [
-                (np.load(os.path.join(dataset_dir, file)), infer_label(file))
-                for file in files
-            ]
+            features, labels = [], []
+            for file in files:
+                data = np.load(os.path.join(dataset_dir, file))
+                label = infer_label(file)
+                if label is not None:
+                    features.append(data)
+                    labels.append(label)
+
+            dataset = tf.data.Dataset.from_tensor_slices((features, labels))
+            if shuffle:
+                dataset = dataset.shuffle(buffer_size=len(features))
+            dataset = dataset.batch(batch_size)
             return dataset
 
         print(f"Loading MIL features from: {os.path.basename(self.data_dir)}")
-        self.train_ds = load(self.data_dir, "train")
-        self.test_ds = load(self.data_dir, "test")
+        self.train_ds = load(self.data_dir, "train", batch_size, shuffle)
+        self.val_ds = load(self.data_dir, "train", batch_size, shuffle)
+        self.test_ds = load(self.data_dir, "test", batch_size, shuffle)
 
     def info(self, verbose=False):
         if verbose:

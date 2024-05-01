@@ -111,7 +111,7 @@ class CLAM_SB(tf.keras.Model):
 
         return instance_loss, all_preds, all_targets
 
-    def call(self, x, training=False):
+    def call(self, h, training=False):
 
         # h = self.feature_extractor(preprocess_input(x))
         h = self.dense(h)
@@ -180,7 +180,8 @@ def model(args, params):
         metrics=["accuracy"],
     )
 
-    model.build(input_shape=(args["batch_size"], *args["patch_dims"]))
+    # model.build(input_shape=(args["batch_size"], *args["patch_dims"]))
+    model.build(input_shape=(88, 1024))
 
     return model
 
