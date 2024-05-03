@@ -6,7 +6,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.layers import Dropout, Dense
-from tensorflow.keras.losses import BinaryCrossentropy
+from tensorflow.keras.losses import BinaryCrossentropy, SparseCategoricalCrossentropy
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.applications import ResNet50
 from tensorflow.keras.applications.resnet import preprocess_input
@@ -51,7 +51,7 @@ class CLAM_SB(tf.keras.Model):
         dropout=False,
         k_sample=8,
         n_classes=2,
-        instance_loss_fn=BinaryCrossentropy(from_logits=True),
+        instance_loss_fn=SparseCategoricalCrossentropy(),
         instance_eval=True,
         attention_only=False,
         return_features=False,
@@ -79,8 +79,8 @@ class CLAM_SB(tf.keras.Model):
             if gate
             else Attn_Net(L=size[1], D=size[2], dropout=dropout, n_classes=1)
         )
-        self.classifiers = Dense(2)
-        self.instance_classifiers = Dense(2)
+        self.bag_classifier = Dense(2, name="bag")
+        self.instance_classifier = Dense(2, name="instance")
 
     @staticmethod
     def create_positive_targets(length):
@@ -93,10 +93,10 @@ class CLAM_SB(tf.keras.Model):
     def inst_eval(self, A, h):
 
         # Get top & bottom k_sample attention scores
-        top_p_indices = tf.argsort(A, direction="DESCENDING")[:, : self.k_sample]
-        top_n_indices = tf.argsort(A, direction="ASCENDING")[:, : self.k_sample]
-        top_p = tf.gather(h, top_p_indices, axis=1)
-        top_n = tf.gather(h, top_n_indices, axis=1)
+        topk_p = tf.math.top_k(A.reshape(-1), k=self.k_sample)
+        topk_n = tf.math.top_k(-A.reshape(-1), k=self.k_sample)
+        top_p = tf.gather(h, topk_p.indices, axis=1)
+        top_n = tf.gather(h, topk_n.indices, axis=1)
 
         # Assign pseudo-labels
         p_targets = self.create_positive_targets(self.k_sample)
@@ -105,8 +105,8 @@ class CLAM_SB(tf.keras.Model):
         all_instances = tf.concat([top_p, top_n], axis=0)
 
         # Get predictions for all instances
-        logits = self.instance_classifiers(all_instances)
-        logits = logits.reshape((2 * self.k_sample))
+        logits = self.instance_classifier(all_instances)
+        logits = logits.reshape((2 * self.k_sample, 2))
         all_preds = tf.math.top_k(logits, k=1)[-1]
         instance_loss = self.instance_loss_fn(all_targets, logits)
 
@@ -136,7 +136,7 @@ class CLAM_SB(tf.keras.Model):
         A = A.reshape((1, 88))
         h = h.reshape((88, 512))
         M = tf.matmul(A, h)
-        logits = self.classifiers(M)
+        logits = self.bag_classifier(M)
         Y_hat = tf.math.top_k(logits, k=1)[-1]
         Y_prob = tf.nn.softmax(logits, axis=1)
 
@@ -145,15 +145,19 @@ class CLAM_SB(tf.keras.Model):
         self.return_dict = results_dict
 
         if training:
-            return Y_prob, instance_loss
+            return {
+                "bag": Y_prob,
+                "instance": results_dict["inst_preds"],
+            }
         else:
             return tf.argmax(Y_prob, axis=-1)
 
     def train_step(self, data):
         x, y = data
         with tf.GradientTape() as tape:
-            y_pred, instance_loss = self(x, training=True)
-            bag_loss = self.compute_loss(y=y, y_pred=y_pred)
+            outputs = self(x, training=True)
+            bag_loss = self.compute_loss(y=y, y_pred=outputs["bag"])
+            instance_loss = self.instance_loss_fn(y, outputs["instance"])
             loss = (
                 self.bag_loss_weight * bag_loss + self.inst_loss_weight * instance_loss
             )
@@ -161,26 +165,38 @@ class CLAM_SB(tf.keras.Model):
         trainable_vars = self.trainable_variables
         gradients = tape.gradient(loss, trainable_vars)
         self.optimizer.apply_gradients(zip(gradients, trainable_vars))
-        for metric in self.metrics:
-            if metric.name == "loss":
-                metric.update_state(loss)
-            else:
-                metric.update_state(y, y_pred)
+
+        self.compiled_metrics.update_state(y, outputs["bag"])
+        self.compiled_metrics.update_state(y, outputs["instance"])
+
         return {m.name: m.result() for m in self.metrics}
 
 
 def model(args, params):
+
+    bag_loss_fn = BinaryCrossentropy()
+    instance_loss_fn = SparseCategoricalCrossentropy(from_logits=True)
+
     model = CLAM_SB(
         k_sample=params["k_sample"],
         dropout=params["dropout"],
         bag_loss_weight=params["loss_weights"]["bag"],
         inst_loss_weight=params["loss_weights"]["instance"],
+        instance_loss_fn=instance_loss_fn,
     )
 
     model.compile(
-        loss="binary_crossentropy",
+        loss={
+            "bag": bag_loss_fn,
+            "instance": instance_loss_fn,
+        },
+        loss_weights={
+            "bag": params["loss_weights"]["bag"],
+            "instance": params["loss_weights"]["instance"],
+        },
         optimizer=Adam(learning_rate=float(params["learning_rate"])),
         metrics=["accuracy"],
+        run_eagerly=True,
     )
 
     # model.build(input_shape=(args["batch_size"], *args["patch_dims"]))
