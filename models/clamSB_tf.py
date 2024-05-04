@@ -213,4 +213,11 @@ def model(args, params):
 
 
 def model_callbacks(args, params):
-    return []
+    return [
+        keras.callbacks.EarlyStopping(
+            monitor="val_loss",
+            mode="min",
+            verbose=1,
+            patience=params["patience"],
+        ),
+    ]

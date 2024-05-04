@@ -81,6 +81,7 @@ model:
     loss_weights:
       bag: null
       instance: null
+    patience: null
     run_eagerly: null
   model-EfficientNetB0:
     freeze_ratio: null
