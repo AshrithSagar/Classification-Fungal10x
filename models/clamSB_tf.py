@@ -135,7 +135,7 @@ class CLAM_SB(tf.keras.Model):
         if training:
             return {"bag": logits_bag, "instance": logits_instance}
         else:
-            return {"bag": tf.argmax(Y_prob_bag, axis=-1)}
+            return {"bag": tf.argmax(Y_prob_bag, axis=-1), "instance": logits_instance}
 
     def train_step(self, data):
         X_bag_instances, y_true_bag = data
@@ -154,16 +154,34 @@ class CLAM_SB(tf.keras.Model):
         gradients = tape.gradient(loss, trainable_vars)
         self.optimizer.apply_gradients(zip(gradients, trainable_vars))
 
-        self.compiled_metrics.update_state(y_true_bag, y_pred["bag"])
-
+        for metric in self.metrics:
+            if metric.name == "loss":
+                metric.update_state(loss)
+            else:
+                metric.update_state(y_true_bag, y_pred["bag"])
         return {m.name: m.result() for m in self.metrics}
 
     def test_step(self, data):
         X_bag_instances, y_true_bag = data
         y_pred = self(X_bag_instances, training=False)
-        self.compiled_metrics.update_state(y_true_bag, y_pred["bag"])
+        bag_loss = self.loss["bag"](
+            tf.one_hot(y_true_bag, depth=2), tf.one_hot(y_pred["bag"], depth=2)
+        )
+        y_pseudo_instance = self.get_pseudo_labels(y_true_bag)
+        instance_loss = self.loss["instance"](y_pseudo_instance, y_pred["instance"])
+        loss = (
+            self.bag_loss_weight * bag_loss + self.instance_loss_weight * instance_loss
+        )
+        self.compiled_metrics.update_state(
+            y_true_bag, tf.one_hot(y_pred["bag"], depth=2)
+        )
+        metrics = {m.name: m.result() for m in self.metrics}
+        metrics.update({"loss": loss})
+        return metrics
 
-        return {m.name: m.result() for m in self.metrics}
+    def predict_step(self, data):
+        y_pred = self(data, training=False)
+        return y_pred["bag"]
 
 
 def model(args, params):

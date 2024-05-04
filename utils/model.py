@@ -352,9 +352,10 @@ class ModelTrainer:
 
             self.results.update({"ROC": float(lr_auc)})
 
-        _, train_acc = self.model.evaluate(self.train_ds)
-        _, val_acc = self.model.evaluate(self.val_ds)
-        _, test_acc = self.model.evaluate(self.test_ds)
+        batch_size = self.model_args["batch_size"]
+        _, train_acc = self.model.evaluate(self.train_ds, batch_size=batch_size)
+        _, val_acc = self.model.evaluate(self.val_ds, batch_size=batch_size)
+        _, test_acc = self.model.evaluate(self.test_ds, batch_size=batch_size)
 
         accuracy_verbose = (
             lambda data_set, acc: f"Model accuracy on {data_set} data: {acc * 100}"
@@ -376,7 +377,9 @@ class ModelTrainer:
         )
 
         self.x_test, self.y_test = map(np.array, zip(*self.test_ds.unbatch()))
-        self.y_pred = self.model.predict(self.x_test)
+        self.y_pred = self.model.predict(
+            self.x_test, batch_size=self.model_args["batch_size"]
+        )
         self.y_pred = np.where(
             self.y_pred > 0.5, 1, 0
         )  # Better to use; https://stackoverflow.com/a/73215222
@@ -703,6 +706,7 @@ class ModelMaker:
                 verbose=1,
                 monitor="val_loss",
                 save_best_only=True,
+                save_weights_only=self.args["save_weights_only"],
             ),
             keras.callbacks.CSVLogger(
                 filename=self.paths["csv_logger"],

@@ -108,6 +108,7 @@ trainer:
   overwrite_preds: (bool) Overwrite the predictions if already present. Checks for {exp_base_dir}/{exp_name}/{fold-*}/preds.csv;
   patch_dims: (tuple[int, int, int]) Patch dimensions of the dataset.
   predictions_file: (string) Filename of the predictions CSV file, without the extension.
+  save_weights_only: (bool) Whether only the model's weights will be saved during model checkpointing, excluding the model architecture or configuration. Useful for subclassed models of tf.keras.Model, which can be reconstructed from definition.
   subset_size: (int) Subset size of the dataset to be used for training. Used for trial purposes. Set to null to use the entire dataset.
   use_augment: (bool) Whether to use the augmented dataset for training present at train/, or use train_unaugmented/ for training. Whole path:- dataset/{data_dir_name}/fold-*/{train,train_unaugmented}/;
 ```

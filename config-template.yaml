@@ -70,5 +70,6 @@ trainer:
   overwrite_preds: null
   patch_dims: null
   predictions_file: null
+  save_weights_only: null
   subset_size: null
   use_augment: null
