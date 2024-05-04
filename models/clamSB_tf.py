@@ -51,12 +51,16 @@ class CLAM_SB(tf.keras.Model):
         dropout=False,
         k_sample=8,
         n_classes=2,
+        bag_loss_weight=0.6,
+        instance_loss_weight=0.4,
         instance_eval=True,
         attention_only=False,
     ):
         super(CLAM_SB, self).__init__()
         self.k_sample = k_sample
         self.n_classes = n_classes
+        self.bag_loss_weight = bag_loss_weight
+        self.instance_loss_weight = instance_loss_weight
         self.instance_eval = instance_eval
         self.attention_only = attention_only
 
@@ -96,6 +100,16 @@ class CLAM_SB(tf.keras.Model):
         y_pred_instance = tf.math.top_k(logits, k=1)[-1]
         return logits
 
+    def get_pseudo_labels(self, y_true_bag):
+        p_targets = tf.cond(
+            tf.equal(tf.reduce_mean(y_true_bag), 1),
+            lambda: self.create_positive_targets(self.k_sample),
+            lambda: self.create_negative_targets(self.k_sample),
+        )
+        n_targets = self.create_negative_targets(self.k_sample)
+        y_pseudo_instance = tf.concat([p_targets, n_targets], axis=0)
+        return y_pseudo_instance
+
     def call(self, h, training=False):
 
         # h = self.feature_extractor(preprocess_input(x))
@@ -119,66 +133,37 @@ class CLAM_SB(tf.keras.Model):
         Y_prob_bag = tf.nn.softmax(logits_bag, axis=1)
 
         if training:
-            return logits_bag, logits_instance
+            return {"bag": logits_bag, "instance": logits_instance}
         else:
-            return tf.argmax(Y_prob_bag, axis=-1)
+            return {"bag": tf.argmax(Y_prob_bag, axis=-1)}
 
     def train_step(self, data):
         X_bag_instances, y_true_bag = data
         with tf.GradientTape() as tape:
-            y_pred_bag, y_pred_instance = self(X_bag_instances, training=True)
-            loss = self.loss.call(y_true_bag, y_pred_bag, y_pred_instance)
+            y_pred = self(X_bag_instances, training=True)
+
+            bag_loss = self.loss["bag"](tf.one_hot(y_true_bag, depth=2), y_pred["bag"])
+            y_pseudo_instance = self.get_pseudo_labels(y_true_bag)
+            instance_loss = self.loss["instance"](y_pseudo_instance, y_pred["instance"])
+            loss = (
+                self.bag_loss_weight * bag_loss
+                + self.instance_loss_weight * instance_loss
+            )
 
         trainable_vars = self.trainable_variables
         gradients = tape.gradient(loss, trainable_vars)
         self.optimizer.apply_gradients(zip(gradients, trainable_vars))
 
-        self.compiled_metrics.update_state(y_true_bag, y_pred_bag)
+        self.compiled_metrics.update_state(y_true_bag, y_pred["bag"])
 
         return {m.name: m.result() for m in self.metrics}
 
+    def test_step(self, data):
+        X_bag_instances, y_true_bag = data
+        y_pred = self(X_bag_instances, training=False)
+        self.compiled_metrics.update_state(y_true_bag, y_pred["bag"])
 
-class CLAMLoss(tf.keras.losses.Loss):
-    def __init__(
-        self,
-        bag_loss_fn=BinaryCrossentropy(from_logits=True),
-        instance_loss_fn=SparseCategoricalCrossentropy(from_logits=True),
-        bag_weight=0.6,
-        instance_weight=0.4,
-        k_sample=8,
-    ):
-        super().__init__()
-        self.bag_loss_fn = bag_loss_fn
-        self.instance_loss_fn = instance_loss_fn
-        self.bag_weight = bag_weight
-        self.instance_weight = instance_weight
-        self.k_sample = k_sample
-
-    @staticmethod
-    def create_positive_targets(length):
-        return tf.ones((length,), dtype=tf.int64)
-
-    @staticmethod
-    def create_negative_targets(length):
-        return tf.zeros((length,), dtype=tf.int64)
-
-    def call(self, y_true_bag, y_pred_bag, y_pred_instance):
-        # Assign pseudo-labels to instances
-        p_targets = tf.cond(
-            tf.equal(tf.reduce_mean(y_true_bag), 1),
-            lambda: self.create_positive_targets(self.k_sample),
-            lambda: self.create_negative_targets(self.k_sample),
-        )
-        n_targets = self.create_negative_targets(self.k_sample)
-        y_pseudo_instance = tf.concat([p_targets, n_targets], axis=0)
-
-        bag_loss = self.bag_loss_fn(y_true_bag, y_pred_bag)
-        instance_loss = self.instance_loss_fn(y_pseudo_instance, y_pred_instance)
-
-        combined_loss = (
-            self.bag_weight * bag_loss + self.instance_weight * instance_loss
-        )
-        return combined_loss
+        return {m.name: m.result() for m in self.metrics}
 
 
 def model(args, params):
@@ -186,16 +171,15 @@ def model(args, params):
     model = CLAM_SB(
         k_sample=params["k_sample"],
         dropout=params["dropout"],
+        bag_loss_weight=params["loss_weights"]["bag"],
+        instance_loss_weight=params["loss_weights"]["instance"],
     )
     metrics = ["accuracy"]
     optimizer = Adam(learning_rate=float(params["learning_rate"]))
-    loss = CLAMLoss(
-        bag_loss_fn=BinaryCrossentropy(),
-        instance_loss_fn=SparseCategoricalCrossentropy(from_logits=True),
-        bag_weight=params["loss_weights"]["bag"],
-        instance_weight=params["loss_weights"]["instance"],
-        k_sample=params["k_sample"],
-    )
+    loss = {
+        "bag": BinaryCrossentropy(from_logits=True),
+        "instance": SparseCategoricalCrossentropy(from_logits=True),
+    }
 
     model.compile(loss=loss, optimizer=optimizer, metrics=metrics, run_eagerly=True)
     # model.build(input_shape=(args["batch_size"], *args["patch_dims"]))
