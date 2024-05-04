@@ -62,9 +62,9 @@ class CLAM_SB(tf.keras.Model):
 
         size_dict = {"small": [1024, 512, 256], "big": [1024, 512, 384]}
         size = size_dict[size_arg]
-        self.feature_extractor = ResNet50(
-            weights="imagenet", include_top=False, pooling="avg"
-        )
+        # self.feature_extractor = ResNet50(
+        #     weights="imagenet", include_top=False, pooling="avg"
+        # )
         self.dense = Dense(size[1], activation=tf.nn.relu)
         self.attention_net = (
             Attn_Net_Gated(L=size[1], D=size[2], dropout=dropout, n_classes=1)
@@ -134,8 +134,6 @@ class CLAM_SB(tf.keras.Model):
         self.optimizer.apply_gradients(zip(gradients, trainable_vars))
 
         self.compiled_metrics.update_state(y_true_bag, y_pred_bag)
-        if self.instance_eval:
-            self.compiled_metrics.update_state(y_true_bag, y_pred_instance)
 
         return {m.name: m.result() for m in self.metrics}
 
@@ -199,7 +197,7 @@ def model(args, params):
         k_sample=params["k_sample"],
     )
 
-    model.compile(loss=loss, optimizer=optimizer, metrics=metrics, run_eagerly=False)
+    model.compile(loss=loss, optimizer=optimizer, metrics=metrics, run_eagerly=True)
     # model.build(input_shape=(args["batch_size"], *args["patch_dims"]))
     model.build(input_shape=(None, 88, 1024))
 
