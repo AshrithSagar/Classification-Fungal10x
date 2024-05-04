@@ -154,12 +154,10 @@ class CLAM_SB(tf.keras.Model):
         gradients = tape.gradient(loss, trainable_vars)
         self.optimizer.apply_gradients(zip(gradients, trainable_vars))
 
-        for metric in self.metrics:
-            if metric.name == "loss":
-                metric.update_state(loss)
-            else:
-                metric.update_state(y_true_bag, y_pred["bag"])
-        return {m.name: m.result() for m in self.metrics}
+        self.compiled_metrics.update_state(y_true_bag, y_pred["bag"])
+        metrics = {m.name: m.result() for m in self.metrics}
+        metrics.update({"loss": loss})
+        return metrics
 
     def test_step(self, data):
         X_bag_instances, y_true_bag = data
