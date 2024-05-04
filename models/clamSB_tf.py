@@ -5,11 +5,14 @@ Model CLAM SB
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras.layers import Dropout, Dense
-from tensorflow.keras.losses import BinaryCrossentropy, SparseCategoricalCrossentropy
-from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.applications import ResNet50
 from tensorflow.keras.applications.resnet import preprocess_input
+from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.losses import BinaryCrossentropy, SparseCategoricalCrossentropy
+from tensorflow.keras.optimizers import Adam
+from tensorflow.python.ops.numpy_ops import np_config
+
+np_config.enable_numpy_behavior()
 
 
 class Attn_Net(tf.keras.Model):
