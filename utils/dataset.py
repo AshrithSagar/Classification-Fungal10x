@@ -673,3 +673,40 @@ class FungalDataLoaderMIL(FungalDataLoader):
         save(self.data_dir, "train", self.x_train_patches, self.x_train_names)
         save(self.data_dir, "test", self.x_test_patches, self.x_test_slide_names)
         print(line_separator)
+
+    def load_features(self, data_dir, subset_size=None, batch_size=32, shuffle=True):
+        """
+        Parameters:
+        - Loads the features from the MIL features directory.
+        - subset_size: Optional, subset of the dataset to use.
+            Default is to use entire available dataset.
+        """
+
+        def infer_label(filename):
+            if filename.startswith("F"):
+                return 1
+            elif filename.startswith("N"):
+                return 0
+            return None
+
+        def load(data_dir, sub_dir, batch_size=32, shuffle=True):
+            dataset_dir = os.path.join(data_dir, sub_dir)
+            files = [file for file in os.listdir(dataset_dir) if file.endswith(".npy")]
+            features, labels = [], []
+            for file in files:
+                data = np.load(os.path.join(dataset_dir, file))
+                label = infer_label(file)
+                if label is not None:
+                    features.append(data)
+                    labels.append(label)
+
+            dataset = tf.data.Dataset.from_tensor_slices((features, labels))
+            if shuffle:
+                dataset = dataset.shuffle(buffer_size=len(features))
+            dataset = dataset.batch(batch_size)
+            return dataset
+
+        self.data_dir = data_dir
+        print(f"Loading MIL features from: {os.path.basename(self.data_dir)}")
+        self.train_ds = load(self.data_dir, "train", batch_size, shuffle)
+        self.test_ds = load(self.data_dir, "test", batch_size, shuffle)

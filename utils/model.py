@@ -13,9 +13,9 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import tensorflow as tf
-from tensorflow import keras
 import yaml
 from sklearn.metrics import classification_report, roc_auc_score, roc_curve
+from tensorflow import keras
 from tensorflow.keras.callbacks import Callback
 from tqdm import tqdm
 
@@ -213,7 +213,6 @@ class ModelTrainer:
 
         print(f"Loading MIL features from: {os.path.basename(self.data_dir)}")
         self.train_ds = load(self.data_dir, "train", batch_size, shuffle)
-        self.val_ds = load(self.data_dir, "train", batch_size, shuffle)
         self.test_ds = load(self.data_dir, "test", batch_size, shuffle)
 
     def info(self, verbose=False):
