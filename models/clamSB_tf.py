@@ -197,7 +197,12 @@ def model(args, params):
         "instance": SparseCategoricalCrossentropy(from_logits=True),
     }
 
-    model.compile(loss=loss, optimizer=optimizer, metrics=metrics, run_eagerly=True)
+    model.compile(
+        loss=loss,
+        optimizer=optimizer,
+        metrics=metrics,
+        run_eagerly=params["run_eagerly"],
+    )
     # model.build(input_shape=(args["batch_size"], *args["patch_dims"]))
     model.build(input_shape=(None, 88, 1024))
 

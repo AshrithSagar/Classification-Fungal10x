@@ -78,6 +78,10 @@ model:
     k_sample: null
     dropout: null
     learning_rate: null
+    loss_weights:
+      bag: null
+      instance: null
+    run_eagerly: null
   model-EfficientNetB0:
     freeze_ratio: null
     learning_rate: null
