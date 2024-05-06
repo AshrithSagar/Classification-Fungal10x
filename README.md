@@ -33,6 +33,17 @@ Fungal classification | Multiple Instance Learning
     pip install -r requirements.txt
     ```
 
+---
+
+### Additional loss functions
+
+(Preferably install it somewhere outside the project directory.)
+
+```bash
+git clone https://github.com/oval-group/smooth-topk.git
+pip install smooth-topk/
+```
+
 ## Usage
 
 ### Config file

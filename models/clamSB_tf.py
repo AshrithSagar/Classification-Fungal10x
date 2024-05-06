@@ -5,22 +5,17 @@ Model CLAM SB
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras.applications import ResNet50
-from tensorflow.keras.applications.resnet import preprocess_input
-from tensorflow.keras.layers import Dense, Dropout
-from tensorflow.keras.losses import BinaryCrossentropy, SparseCategoricalCrossentropy
-from tensorflow.keras.optimizers import Adam
 from tensorflow.python.ops.numpy_ops import np_config
 
 np_config.enable_numpy_behavior()
 
 
-class Attn_Net(tf.keras.Model):
+class Attn_Net(keras.Model):
     def __init__(self, L=1024, D=256, dropout=False, n_classes=1):
         super(Attn_Net, self).__init__()
-        self.dense1 = Dense(D, activation="tanh")
-        self.dropout = Dropout(0.25) if dropout else None
-        self.dense2 = Dense(n_classes)
+        self.dense1 = keras.layers.Dense(D, activation="tanh")
+        self.dropout = keras.layers.Dropout(0.25) if dropout else None
+        self.dense2 = keras.layers.Dense(n_classes)
 
     def call(self, x):
         x = self.dense1(x)
@@ -29,13 +24,13 @@ class Attn_Net(tf.keras.Model):
         return self.dense2(x), x
 
 
-class Attn_Net_Gated(tf.keras.Model):
+class Attn_Net_Gated(keras.Model):
     def __init__(self, L=1024, D=256, dropout=False, n_classes=1):
         super(Attn_Net_Gated, self).__init__()
-        self.dense1_a = Dense(D, activation="tanh")
-        self.dense1_b = Dense(D, activation="sigmoid")
-        self.dropout = Dropout(0.25) if dropout else None
-        self.dense2 = Dense(n_classes)
+        self.dense1_a = keras.layers.Dense(D, activation="tanh")
+        self.dense1_b = keras.layers.Dense(D, activation="sigmoid")
+        self.dropout = keras.layers.Dropout(0.25) if dropout else None
+        self.dense2 = keras.layers.Dense(n_classes)
 
     def call(self, x):
         a = self.dense1_a(x)
@@ -46,7 +41,7 @@ class Attn_Net_Gated(tf.keras.Model):
         return self.dense2(A), x
 
 
-class CLAM_SB(tf.keras.Model):
+class CLAM_SB(keras.Model):
     def __init__(
         self,
         gate=True,
@@ -69,17 +64,16 @@ class CLAM_SB(tf.keras.Model):
 
         size_dict = {"small": [1024, 512, 256], "big": [1024, 512, 384]}
         size = size_dict[size_arg]
-        # self.feature_extractor = ResNet50(
+        # self.feature_extractor = keras.applications.ResNet50(
         #     weights="imagenet", include_top=False, pooling="avg"
         # )
-        self.dense = Dense(size[1], activation=tf.nn.relu)
-        self.attention_net = (
-            Attn_Net_Gated(L=size[1], D=size[2], dropout=dropout, n_classes=1)
-            if gate
-            else Attn_Net(L=size[1], D=size[2], dropout=dropout, n_classes=1)
+        self.dense = keras.layers.Dense(size[1], activation=tf.nn.relu)
+        attention_net = Attn_Net_Gated if gate else Attn_Net
+        self.attention_net = attention_net(
+            L=size[1], D=size[2], dropout=dropout, n_classes=1
         )
-        self.bag_classifier = Dense(2, name="bag")
-        self.instance_classifier = Dense(2, name="instance")
+        self.bag_classifier = keras.layers.Dense(2, name="bag")
+        self.instance_classifier = keras.layers.Dense(2, name="instance")
 
     @staticmethod
     def create_positive_targets(length):
@@ -115,7 +109,7 @@ class CLAM_SB(tf.keras.Model):
 
     def call(self, h, training=False):
 
-        # h = self.feature_extractor(preprocess_input(x))
+        # h = self.feature_extractor(keras.applications.resnet.preprocess_input(x))
         h = self.dense(h)
         A, h = self.attention_net(h)
         A = tf.transpose(A)
@@ -148,6 +142,7 @@ class CLAM_SB(tf.keras.Model):
             bag_loss = self.loss["bag"](tf.one_hot(y_true_bag, depth=2), y_pred["bag"])
             y_pseudo_instance = self.get_pseudo_labels(y_true_bag)
             instance_loss = self.loss["instance"](y_pseudo_instance, y_pred["instance"])
+
             loss = (
                 self.bag_loss_weight * bag_loss
                 + self.instance_loss_weight * instance_loss
@@ -185,6 +180,70 @@ class CLAM_SB(tf.keras.Model):
         return y_pred["bag"]
 
 
+import tensorflow as tf
+import numpy as np
+
+
+class SmoothTop1SVM(keras.losses.Loss):
+    def __init__(self, n_classes, alpha=None, tau=1.0):
+        super(SmoothTop1SVM, self).__init__()
+        self.n_classes = n_classes
+        self.alpha = alpha if alpha is not None else 1.0
+        self.tau = tau
+        self.thresh = 1e3
+        self.labels = tf.range(n_classes)
+
+    def detect_large(self, x, k, tau, thresh):
+        top_k, _ = tf.math.top_k(x, k + 1, sorted=True)
+        hard = tf.cast(
+            tf.greater_equal(
+                top_k[:, k - 1] - top_k[:, k], k * tau * tf.math.log(thresh)
+            ),
+            tf.float32,
+        )
+        smooth = 1.0 - hard
+        return smooth, hard
+
+    def call(self, y_true, y_pred):
+        smooth, hard = self.detect_large(y_pred, 1, self.tau, self.thresh)
+
+        loss = 0.0
+        if tf.math.reduce_sum(smooth) > 0:
+            x_s, y_s = tf.boolean_mask(y_pred, smooth), tf.boolean_mask(y_true, smooth)
+            loss += tf.math.reduce_sum(self.top1_smooth_svm(x_s, y_s)) / tf.cast(
+                tf.shape(y_pred)[0], tf.float32
+            )
+
+        if tf.math.reduce_sum(hard) > 0:
+            x_h, y_h = tf.boolean_mask(y_pred, hard), tf.boolean_mask(y_true, hard)
+            loss += tf.math.reduce_sum(self.top1_hard_svm(x_h, y_h)) / tf.cast(
+                tf.shape(y_pred)[0], tf.float32
+            )
+
+        return loss
+
+    def top1_hard_svm(self, x, y):
+        delta = self.delta(y, self.labels, self.alpha)
+        max_scores = tf.reduce_max(x + delta, axis=1)
+        ground_truth_scores = tf.gather(x, y, batch_dims=1)
+        return max_scores - ground_truth_scores
+
+    def top1_smooth_svm(self, x, y):
+        delta = self.delta(y, self.labels, self.alpha)
+        x_with_loss = x + delta - tf.gather(x, y, batch_dims=1)[:, None]
+        return self.tau * tf.math.log(
+            tf.reduce_sum(tf.exp(x_with_loss / self.tau), axis=1)
+        )
+
+    def delta(self, y, labels, alpha=None):
+        y = tf.cast(y, tf.int64)
+        labels = tf.cast(labels, tf.int64)
+        delta = tf.cast(tf.not_equal(y[:, None], labels[None, :]), tf.float32)
+        if alpha is not None:
+            delta *= alpha
+        return delta
+
+
 def model(args, params):
 
     model = CLAM_SB(
@@ -194,10 +253,11 @@ def model(args, params):
         instance_loss_weight=params["loss_weights"]["instance"],
     )
     metrics = ["accuracy"]
-    optimizer = Adam(learning_rate=float(params["learning_rate"]))
+    optimizer = keras.optimizers.Adam(learning_rate=float(params["learning_rate"]))
+
     loss = {
-        "bag": BinaryCrossentropy(from_logits=True),
-        "instance": SparseCategoricalCrossentropy(from_logits=True),
+        "bag": keras.losses.BinaryCrossentropy(from_logits=True),
+        "instance": SmoothTop1SVM(n_classes=2),
     }
 
     model.compile(
