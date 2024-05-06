@@ -34,44 +34,32 @@ if __name__ == "__main__":
         d_args["data_dir_name"],
     )
     fdl.load_features(
-        data_dir=t_args["data_dir"],
+        data_dir=t_args["features_dir"],
         subset_size=t_args["subset_size"],
         batch_size=t_args["batch_size"],
         shuffle=False,
     )
 
-    filter_data = lambda x, y: x
-    filter_labels = lambda x, y: y
-    get_ds = lambda f: np.concatenate(list(fdl.train_ds.map(f)))
-    data, labels = get_ds(filter_data), get_ds(filter_labels)
-
-    kfold = StratifiedKFold(
-        n_splits=d_args["n_splits"], shuffle=True, random_state=fdl.seed
-    )
-    for fold, (train_idx, val_idx) in enumerate(kfold.split(data, labels)):
-        if fold not in t_args["folds"]:
-            continue
-
-        fold_dir = f"fold_{fold}"
-        print(f"Running on fold: {fold}")
+    for fold_data in fdl.create_kfold_splits(
+        n_splits=d_args["n_splits"],
+        batch_size=t_args["batch_size"],
+        run_only=t_args["folds"],
+    ):
+        fold_dir = f"fold_{fdl.fold}"
+        print(f"Running on fold: {fdl.fold}")
         model_params = m_args[f'model-{m_args["_select"]}']
 
         mt = ModelTrainer(
             exp_base_dir=os.path.join(t_args["exp_base_dir"], t_args["exp_name"]),
             exp_name=fold_dir,
-            data_dir=t_args["data_dir"],
+            data_dir=t_args["features_dir"],
             model_args=t_args,
             model_params=model_params,
             model_name=m_args["_select"],
             image_dims=d_args["patch_size"],
             MIL=True,
         )
-        mt.train_ds = tf.data.Dataset.from_tensor_slices(
-            (data[train_idx], labels[train_idx]),
-        ).batch(t_args["batch_size"])
-        mt.val_ds = tf.data.Dataset.from_tensor_slices(
-            (data[val_idx], labels[val_idx]),
-        ).batch(t_args["batch_size"])
+        mt.train_ds, mt.val_ds = fold_data
         mt.test_ds = fdl.test_ds
 
         mdl = ModelMaker(

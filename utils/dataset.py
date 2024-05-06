@@ -576,9 +576,6 @@ class FungalDataLoaderMIL(FungalDataLoader):
         )
         self.feature_extractor = None
 
-    def create_kfold_splits(self, n_splits=5, run_only=None):
-        kfold = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=self.seed)
-
     def extract_features(self, feature_extractor=None):
         def extract(dataset, feature_extractor):
             dataset = tf.data.Dataset.from_tensor_slices(dataset)
@@ -710,3 +707,24 @@ class FungalDataLoaderMIL(FungalDataLoader):
         print(f"Loading MIL features from: {os.path.basename(self.data_dir)}")
         self.train_ds = load(self.data_dir, "train", batch_size, shuffle)
         self.test_ds = load(self.data_dir, "test", batch_size, shuffle)
+
+    def create_kfold_splits(self, n_splits=5, batch_size=1, run_only=None):
+        kfold = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=self.seed)
+
+        filter_data = lambda x, y: x
+        filter_labels = lambda x, y: y
+        get_ds = lambda f: np.concatenate(list(self.train_ds.map(f)))
+        data, labels = get_ds(filter_data), get_ds(filter_labels)
+
+        for self.fold, (train_idx, val_idx) in enumerate(kfold.split(data, labels)):
+            if run_only and self.fold not in run_only:
+                continue
+
+            train_ds = tf.data.Dataset.from_tensor_slices(
+                (data[train_idx], labels[train_idx])
+            ).batch(batch_size)
+            val_ds = tf.data.Dataset.from_tensor_slices(
+                (data[val_idx], labels[val_idx])
+            ).batch(batch_size)
+
+            yield train_ds, val_ds
