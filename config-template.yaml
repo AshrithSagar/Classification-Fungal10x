@@ -67,6 +67,7 @@ trainer:
   data_dir: null
   exp_base_dir: null
   exp_name: null
+  features_dir: null
   folds: null
   max_epochs: null
   overwrite_preds: null

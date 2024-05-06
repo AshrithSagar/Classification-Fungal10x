@@ -108,6 +108,7 @@ trainer:
   data_dir: (path) Path to the directory containing the dataset. Should likely be as some dataset/{data_dir_name}/; Should contain within as /fold-*/{train, val, test}/{fungal, non-fungal}/; Refer to the directory structure.
   exp_base_dir: (path) Base directory containing all the experiment folders. Usually set to experiments/.
   exp_name: (str) Current experiment name. Will be used to create a directory in exp_base_dir. {exp_base_dir}/{exp_name}/;
+  features_dir: (path) Path to the directory containing the features. Particularly for the MIL datasets.
   folds: (list[int]) List of folds to be considered. Zero-indexed.
   max_epochs: (int) Maximum number of epochs to train the model.
   overwrite_preds: (bool) Overwrite the predictions if already present. Checks for {exp_base_dir}/{exp_name}/{fold-*}/preds.csv;
