@@ -119,10 +119,10 @@ class CLAM_SB(tf.keras.Model):
         h = self.dense(h)
         A, h = self.attention_net(h)
         A = tf.transpose(A)
-        if self.attention_only:
-            return A
         A_raw = A
         A = tf.nn.softmax(A, axis=1)
+        if self.attention_only:
+            return A
 
         if self.instance_eval:
             logits_instance = self.inst_eval(A, h)
