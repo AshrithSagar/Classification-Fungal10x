@@ -424,6 +424,51 @@ class ModelTrainer:
         return predictions
 
 
+class ModelTrainerMIL(ModelTrainer):
+
+    def __init__(
+        self,
+        exp_base_dir=None,
+        exp_name=None,
+        exp_dir=None,
+        data_dir=None,
+        model_args=None,
+        model_params=None,
+        model_name=None,
+        image_dims=(224, 224),
+        MIL=None,
+        seed=42,
+    ):
+        super(ModelTrainerMIL, self).__init__(
+            exp_base_dir=exp_base_dir,
+            exp_name=exp_name,
+            exp_dir=exp_dir,
+            data_dir=data_dir,
+            model_args=model_args,
+            model_params=model_params,
+            model_name=model_name,
+            image_dims=image_dims,
+            MIL=MIL,
+            seed=seed,
+        )
+
+    def predict(self, features, save_file="preds.csv", overwrite=False, verbose=None):
+        file = os.path.join(self.exp_dir, save_file)
+        if not overwrite and os.path.exists(file):
+            predictions = np.loadtxt(file, delimiter=",")
+            return predictions
+
+        self.model.attention_only = True
+        predictions = []
+        for batch_features, _ in features:
+            preds = self.model(batch_features)
+            predictions.append(preds)
+        predictions = np.squeeze(np.array(predictions))
+        np.savetxt(file, predictions, delimiter=",")
+
+        return predictions
+
+
 class ModelSummary:
     """This class provides functionality to analyze and summarize results of each trained model."""
 
