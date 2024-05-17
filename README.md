@@ -117,6 +117,7 @@ model:
 trainer:
   batch_size: (int) Batch size for training.
   data_dir: (path) Path to the directory containing the dataset. Should likely be as some dataset/{data_dir_name}/; Should contain within as /fold-*/{train, val, test}/{fungal, non-fungal}/; Refer to the directory structure.
+  evaluate_only: (bool) Evaluate the model on the test set only. Useful for only evaluating a trained model.
   exp_base_dir: (path) Base directory containing all the experiment folders. Usually set to experiments/.
   exp_name: (str) Current experiment name. Will be used to create a directory in exp_base_dir. {exp_base_dir}/{exp_name}/;
   features_dir: (path) Path to the directory containing the features. Particularly for the MIL datasets.

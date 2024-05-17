@@ -50,5 +50,6 @@ if __name__ == "__main__":
         )
 
         mt.info()
-        mt.train()
+        if not t_args["evaluate_only"]:
+            mt.train()
         mt.evaluate()

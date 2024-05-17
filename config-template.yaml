@@ -65,6 +65,7 @@ summary:
 trainer:
   batch_size: null
   data_dir: null
+  evaluate_only: null
   exp_base_dir: null
   exp_name: null
   features_dir: null
