@@ -410,7 +410,7 @@ class ModelTrainer:
         iterator = (
             patched_slides
             if verbose is not None
-            else tqdm(patched_slides, desc="Predicting")
+            else tqdm(patched_slides, desc="Predicting", unit="slide")
         )
         for index, patches in enumerate(iterator):
             preds = self.model.predict_on_batch(patches)

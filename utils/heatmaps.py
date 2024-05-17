@@ -177,7 +177,9 @@ class Heatmaps:
         print(f"Saving in {self.save_dir}")
 
         for slide, slide_name, preds, label in tqdm(
-            zip(slides, slide_names, predictions, slide_labels)
+            zip(slides, slide_names, predictions, slide_labels),
+            desc="Generating heatmaps",
+            unit="slide",
         ):
             cmap_labels = [(1 - pred) for pred in preds] if invert_preds else preds
             slide = slide.astype(np.uint8)
