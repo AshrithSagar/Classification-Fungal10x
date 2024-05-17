@@ -604,6 +604,8 @@ class FungalDataLoaderMIL(FungalDataLoader):
 
         feature_extractor.eval()
         feature_extractor.to(device)
+        if torch.cuda.device_count() > 1:
+            feature_extractor = torch.nn.DataParallel(feature_extractor)
         self.train_feats = extract(self.x_train_patches, feature_extractor)
         self.test_feats = extract(self.x_test_patches, feature_extractor)
 

@@ -6,7 +6,6 @@ import os
 import sys
 
 import torch
-import torch.nn as nn
 
 sys.path.append(os.getcwd())
 from models.resnet_custom import resnet50_baseline
@@ -21,13 +20,7 @@ if __name__ == "__main__":
     gpu = GPUHandler()
     gpu.check()
     gpu.set(device_index=g_args["device_index"])
-    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-
-    model = resnet50_baseline(pretrained=True)
-    model = model.to(device)
-    if torch.cuda.device_count() > 1:
-        model = nn.DataParallel(model)
-    model.eval()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     fdl = FungalDataLoaderMIL(
         d_args["slide_dir"],
@@ -49,5 +42,6 @@ if __name__ == "__main__":
     fdl.extract_patches(size=d_args["patch_size"], overlap=d_args["overlap"])
     fdl.save_patches()
 
-    fdl.extract_features_torch(feature_extractor=model, device=device)
+    feature_extractor = resnet50_baseline(pretrained=True)
+    fdl.extract_features_torch(feature_extractor, device=device)
     fdl.save_features_torch()
