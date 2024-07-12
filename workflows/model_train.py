@@ -9,7 +9,6 @@ sys.path.append(os.getcwd())
 from utils.config import GPUHandler, load_config
 from utils.model import ModelMaker, ModelTrainer
 
-
 if __name__ == "__main__":
     g_args = load_config(config_file="config.yaml", key="gpu")
     d_args = load_config(config_file="config.yaml", key="dataset")

@@ -12,7 +12,6 @@ from models.resnet_custom import resnet50_baseline
 from utils.config import GPUHandler, load_config
 from utils.dataset import FungalDataLoaderMIL
 
-
 if __name__ == "__main__":
     g_args = load_config(config_file="config.yaml", key="gpu")
     d_args = load_config(config_file="config.yaml", key="dataset")

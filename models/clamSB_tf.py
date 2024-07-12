@@ -180,8 +180,8 @@ class CLAM_SB(keras.Model):
         return y_pred["bag"]
 
 
-import tensorflow as tf
 import numpy as np
+import tensorflow as tf
 
 
 class SmoothTop1SVM(keras.losses.Loss):

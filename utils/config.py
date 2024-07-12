@@ -3,8 +3,9 @@ config.py
 """
 
 import os
-import yaml
+
 import tensorflow as tf
+import yaml
 
 line_separator = "\u2500" * 50
 

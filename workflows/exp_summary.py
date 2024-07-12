@@ -9,7 +9,6 @@ sys.path.append(os.getcwd())
 from utils.config import load_config
 from utils.model import ModelSummary
 
-
 if __name__ == "__main__":
     h_args = load_config(config_file="config.yaml", key="heatmaps")
     t_args = load_config(config_file="config.yaml", key="trainer")

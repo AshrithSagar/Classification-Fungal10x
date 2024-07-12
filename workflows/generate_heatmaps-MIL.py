@@ -13,7 +13,6 @@ from utils.dataset import FungalDataLoaderMIL
 from utils.heatmaps import Heatmaps
 from utils.model import ModelMaker, ModelTrainerMIL
 
-
 if __name__ == "__main__":
     g_args = load_config(config_file="config.yaml", key="gpu")
     d_args = load_config(config_file="config.yaml", key="dataset")
