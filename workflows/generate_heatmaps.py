@@ -19,7 +19,6 @@ def main(args):
     t_args, h_args = args["trainer"], args["heatmaps"]
 
     gpu = GPUHandler()
-    gpu.check()
     gpu.set(device_index=g_args["device_index"])
 
     if h_args["source_dir"]:

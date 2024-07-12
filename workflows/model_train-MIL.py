@@ -23,7 +23,6 @@ def main(args):
     m_args, t_args = args["model"], args["trainer"]
 
     gpu = GPUHandler()
-    gpu.check()
     gpu.set(device_index=g_args["device_index"])
 
     fdl = FungalDataLoaderMIL(

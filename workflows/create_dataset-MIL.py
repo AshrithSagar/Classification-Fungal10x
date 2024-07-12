@@ -18,7 +18,6 @@ def main(args):
     g_args, d_args = args["gpu"], args["dataset"]
 
     gpu = GPUHandler()
-    gpu.check()
     gpu.set(device_index=g_args["device_index"])
 
     fdl = FungalDataLoaderMIL(

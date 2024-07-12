@@ -47,7 +47,7 @@ class Config:
 
 class GPUHandler:
     def __init__(self):
-        pass
+        self.check()
 
     def check(self):
         devices = tf.config.list_physical_devices()
