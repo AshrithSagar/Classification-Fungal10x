@@ -10,8 +10,9 @@ from utils.config import load_config
 from utils.model import ModelSummary
 
 if __name__ == "__main__":
-    h_args = load_config(config_file="config.yaml", key="heatmaps")
-    t_args = load_config(config_file="config.yaml", key="trainer")
+    config_file = "config.yaml"
+    h_args = load_config(config_file, key="heatmaps")
+    t_args = load_config(config_file, key="trainer")
 
     ms = ModelSummary(
         exp_base_dir=t_args["exp_base_dir"],

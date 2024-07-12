@@ -10,10 +10,11 @@ from utils.config import GPUHandler, load_config
 from utils.model import ModelMaker, ModelTrainer
 
 if __name__ == "__main__":
-    g_args = load_config(config_file="config.yaml", key="gpu")
-    d_args = load_config(config_file="config.yaml", key="dataset")
-    m_args = load_config(config_file="config.yaml", key="model")
-    t_args = load_config(config_file="config.yaml", key="trainer")
+    config_file = "config.yaml"
+    g_args = load_config(config_file, key="gpu")
+    d_args = load_config(config_file, key="dataset")
+    m_args = load_config(config_file, key="model")
+    t_args = load_config(config_file, key="trainer")
 
     gpu = GPUHandler()
     gpu.check()
