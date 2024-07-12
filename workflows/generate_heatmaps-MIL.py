@@ -8,18 +8,15 @@ import sys
 sys.path.append(os.getcwd())
 import numpy as np
 
-from utils.config import GPUHandler, line_separator, load_config
+from utils.config import Config, GPUHandler, line_separator
 from utils.dataset import FungalDataLoaderMIL
 from utils.heatmaps import Heatmaps
 from utils.model import ModelMaker, ModelTrainerMIL
 
-if __name__ == "__main__":
-    config_file = "config.yaml"
-    g_args = load_config(config_file, key="gpu")
-    d_args = load_config(config_file, key="dataset")
-    m_args = load_config(config_file, key="model")
-    t_args = load_config(config_file, key="trainer")
-    h_args = load_config(config_file, key="heatmaps")
+
+def main(args):
+    g_args, d_args, m_args = args["gpu"], args["dataset"], args["model"]
+    t_args, h_args = args["trainer"], args["heatmaps"]
 
     gpu = GPUHandler()
     gpu.check()
@@ -110,3 +107,8 @@ if __name__ == "__main__":
             use_plt=h_args["use_plt"],
             save_ext=h_args["file_extension"],
         )
+
+
+if __name__ == "__main__":
+    args = Config.from_args("Generate heatmaps for the trained MIL model.")
+    main(args)

@@ -2,6 +2,7 @@
 config.py
 """
 
+import argparse
 import os
 
 import tensorflow as tf
@@ -10,14 +11,38 @@ import yaml
 line_separator = "\u2500" * 50
 
 
-def load_config(config_file="config.yaml", key=None):
-    with open(config_file, "r") as file:
-        config = yaml.safe_load(file)
+class Config:
+    def __init__(self, file="config.yaml", verbose=True):
+        if not os.path.exists(file):
+            raise FileNotFoundError(f"Configuration file not found: {file}")
+        self.file = file
+        self.config = self.load()
+        if verbose:
+            print(f"Configuration loaded from {self.file}")
 
-    if key:
-        return config.get(key, {})
-    else:
+    def load(self):
+        with open(self.file, "r") as f:
+            if self.file.endswith(".yaml") or self.file.endswith(".yml"):
+                config = yaml.safe_load(f)
+            else:
+                raise ValueError("Invalid configuration file format")
         return config
+
+    @classmethod
+    def from_args(cls, description=None):
+        """Create a Config instance from command-line arguments"""
+        parser = argparse.ArgumentParser(description=description)
+        parser.add_argument(
+            "--config",
+            metavar="config_file",
+            type=str,
+            nargs="?",
+            default="config.yaml",
+            help="Path to the configuration file [.yaml/.yml] (default: config.yaml)",
+        )
+        args = parser.parse_args()
+        config_file = getattr(args, "config", "config.yaml")
+        return cls(config_file)
 
 
 class GPUHandler:

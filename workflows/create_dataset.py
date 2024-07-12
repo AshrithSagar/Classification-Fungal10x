@@ -8,13 +8,12 @@ import sys
 sys.path.append(os.getcwd())
 import tensorflow as tf
 
-from utils.config import GPUHandler, load_config
+from utils.config import Config, GPUHandler
 from utils.dataset import FungalDataLoader
 
-if __name__ == "__main__":
-    config_file = "config.yaml"
-    g_args = load_config(config_file, key="gpu")
-    d_args = load_config(config_file, key="dataset")
+
+def main(args):
+    g_args, d_args = args["gpu"], args["dataset"]
 
     gpu = GPUHandler()
     gpu.check()
@@ -63,3 +62,8 @@ if __name__ == "__main__":
         fdl.zip_data_dir()
 
     # fdl.dataset_info()
+
+
+if __name__ == "__main__":
+    args = Config.from_args("Create dataset from the original slides.")
+    main(args)

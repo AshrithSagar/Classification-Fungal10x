@@ -10,13 +10,12 @@ import tensorflow as tf
 from tensorflow.keras.applications import ResNet50
 from tensorflow.keras.applications.resnet import preprocess_input
 
-from utils.config import GPUHandler, load_config
+from utils.config import Config, GPUHandler
 from utils.dataset import FungalDataLoaderMIL
 
-if __name__ == "__main__":
-    config_file = "config.yaml"
-    g_args = load_config(config_file, key="gpu")
-    d_args = load_config(config_file, key="dataset")
+
+def main(args):
+    g_args, d_args = args["gpu"], args["dataset"]
 
     gpu = GPUHandler()
     gpu.check()
@@ -44,3 +43,8 @@ if __name__ == "__main__":
 
     feature_extractor = ResNet50(weights="imagenet", include_top=False, pooling="avg")
     fdl.extract_features(feature_extractor)
+
+
+if __name__ == "__main__":
+    args = Config.from_args("Create MIL dataset from the original slides.")
+    main(args)

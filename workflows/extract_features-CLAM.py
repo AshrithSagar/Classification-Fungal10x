@@ -9,13 +9,12 @@ import torch
 
 sys.path.append(os.getcwd())
 from models.resnet_custom import resnet50_baseline
-from utils.config import GPUHandler, load_config
+from utils.config import Config, GPUHandler
 from utils.dataset import FungalDataLoaderMIL
 
-if __name__ == "__main__":
-    config_file = "config.yaml"
-    g_args = load_config(config_file, key="gpu")
-    d_args = load_config(config_file, key="dataset")
+
+def main(args):
+    g_args, d_args = args["gpu"], args["dataset"]
 
     gpu = GPUHandler()
     gpu.check()
@@ -45,3 +44,8 @@ if __name__ == "__main__":
     feature_extractor = resnet50_baseline(pretrained=True)
     fdl.extract_features_torch(feature_extractor, device=device)
     fdl.save_features_torch()
+
+
+if __name__ == "__main__":
+    args = Config.from_args("Extract features from the dataset.")
+    main(args)

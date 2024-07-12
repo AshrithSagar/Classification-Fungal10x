@@ -11,19 +11,16 @@ from sklearn.model_selection import StratifiedKFold
 from tensorflow.python.ops.numpy_ops import np_config
 
 sys.path.append(os.getcwd())
-from utils.config import GPUHandler, load_config
+from utils.config import Config, GPUHandler
 from utils.dataset import FungalDataLoaderMIL
 from utils.model import ModelMaker, ModelTrainer
 
 np_config.enable_numpy_behavior()
 
 
-if __name__ == "__main__":
-    config_file = "config.yaml"
-    g_args = load_config(config_file, key="gpu")
-    d_args = load_config(config_file, key="dataset")
-    m_args = load_config(config_file, key="model")
-    t_args = load_config(config_file, key="trainer")
+def main(args):
+    g_args, d_args = args["gpu"], args["dataset"]
+    m_args, t_args = args["model"], args["trainer"]
 
     gpu = GPUHandler()
     gpu.check()
@@ -78,3 +75,8 @@ if __name__ == "__main__":
         mt.info()
         mt.train()
         mt.evaluate()
+
+
+if __name__ == "__main__":
+    args = Config.from_args("Train the model on the MIL dataset.")
+    main(args)
