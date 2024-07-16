@@ -20,6 +20,9 @@ class Config:
         if verbose:
             print(f"Configuration loaded from {self.file}")
 
+    def __getitem__(self, key):
+        return self.config[key]
+
     def load(self):
         with open(self.file, "r") as f:
             if self.file.endswith(".yaml") or self.file.endswith(".yml"):
