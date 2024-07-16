@@ -8,4 +8,4 @@ Fungal classification | Multiple Instance Learning
 
 ## License
 
-This project falls under the [MIT License](LICENSE).
+This project falls under the [MIT License](https://github.com/AshrithSagar/Classification-Fungal10x/blob/main/LICENSE).
