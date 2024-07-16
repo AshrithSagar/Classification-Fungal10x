@@ -549,7 +549,7 @@ class ModelSummary:
         for fold in self.folds:
             results_file = os.path.join(self.exp_dir, fold, "results.yaml")
             with open(results_file, "r") as infile:
-                self.results.append(yaml.load(infile, Loader=yaml.FullLoader))
+                self.results.append(yaml.safe_load(infile))
 
         results = []
         columns = [
