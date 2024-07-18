@@ -1,93 +1,33 @@
 # Configuration file
 
-The configuration file contains various settings and parameters that control the behavior and settings of the project.
-Refer to the [config-template.yaml](https://github.com/AshrithSagar/Classification-Fungal10x/blob/main/config-template.yaml) file for more information.
+The configuration file contains various settings and parameters that control the behavior and settings of the project. Refer to the [config-template.yaml](../../config-template.yaml) file for more information.
 
 ## dataset
 
-| Parameter         | Type              | Description                                                                                         |
-| ----------------- | ----------------- | --------------------------------------------------------------------------------------------------- |
-| annot_dir         | `path`            | Slide annotations directory path. Should have the same names as that in slide_dir.                  |
-| create_zip        | `bool`            | Bundle the created dataset directory in a ZIP for easier download.                                  |
-| data_dir_name     | `str`             | Used to create `dataset/{data_dir_name}/`.                                                          |
-| downsample_factor | `int`             | Downsample slides resolution by this factor. Defaults to preserve aspect ratio.                     |
-| downsample_size   | `tuple[int, int]` | Downsample slides to this size.                                                                     |
-| n_splits          | `int`             | Number of splits for cross-validation.                                                              |
-| overlap           | `bool`            | Overlap factor for extracting patches. Should be between 0 and 1.                                   |
-| patch_size        | `tuple[int, int]` | Patch size for the patches.                                                                         |
-| save_slides       | `bool`            | Whether to save slides, in `dataset/{data_dir_name}-slides/`.                                       |
-| slide_dir         | `path`            | Slides directory path. Corresponding annotations should be in `annot_dir`.                          |
-| use_augment       | `bool`            | Whether to use data augmentation at patch level for the train split. Preferably always use as True. |
+<table data-full-width="true"><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody><tr><td>annot_dir</td><td><code>path</code></td><td>Slide annotations directory path. Should have the same names as that in slide_dir.</td></tr><tr><td>create_zip</td><td><code>bool</code></td><td>Bundle the created dataset directory in a ZIP for easier download.</td></tr><tr><td>data_dir_name</td><td><code>str</code></td><td>Used to create <code>dataset/{data_dir_name}/</code>.</td></tr><tr><td>downsample_factor</td><td><code>int</code></td><td>Downsample slides resolution by this factor. Defaults to preserve aspect ratio.</td></tr><tr><td>downsample_size</td><td><code>tuple[int, int]</code></td><td>Downsample slides to this size.</td></tr><tr><td>n_splits</td><td><code>int</code></td><td>Number of splits for cross-validation.</td></tr><tr><td>overlap</td><td><code>bool</code></td><td>Overlap factor for extracting patches. Should be between 0 and 1.</td></tr><tr><td>patch_size</td><td><code>tuple[int, int]</code></td><td>Patch size for the patches.</td></tr><tr><td>save_slides</td><td><code>bool</code></td><td>Whether to save slides, in <code>dataset/{data_dir_name}-slides/</code>.</td></tr><tr><td>slide_dir</td><td><code>path</code></td><td>Slides directory path. Corresponding annotations should be in <code>annot_dir</code>.</td></tr><tr><td>use_augment</td><td><code>bool</code></td><td>Whether to use data augmentation at patch level for the train split. Preferably always use as True.</td></tr></tbody></table>
 
 ## gpu
 
-| Parameter    | Type  | Description                                                             |
-| ------------ | ----- | ----------------------------------------------------------------------- |
-| device_index | `int` | Device index for the GPU. Set to -1 to disable GPU and use CPU instead. |
+<table data-full-width="true"><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody><tr><td>device_index</td><td><code>int</code></td><td>Device index for the GPU. Set to -1 to disable GPU and use CPU instead.</td></tr></tbody></table>
 
 ## heatmaps
 
-| Parameter         | Type                   | Description                                                                                                                              |
-| ----------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| alpha             | `float`                | Heatmap transparency while overlaying on the slide. Should be between 0 and 1.                                                           |
-| blur              | `tuple[int, int]`      | Gaussian blur kernel size for the heatmap.                                                                                               |
-| cmap              | `str`                  | Colormap for the heatmap. Refer to matplotlib colormaps.                                                                                 |
-| downsample_factor | `int`                  | Downsample slides resolution by this factor (when `source_dir` is provided).                                                             |
-| downsample_size   | `tuple[int, int]`      | Downsample slides to this size (when `source_dir` is provided).                                                                          |
-| file_extension    | `str`                  | File extension for the heatmap images to be saved.                                                                                       |
-| invert_preds      | `bool`                 | Whether to invert the predictions before making the heatmaps. Default is true.                                                           |
-| overlap           | `float`                | Overlap factor for the heatmap patches. Should be between 0 and 1.                                                                       |
-| patch_dims        | `tuple[int, int, int]` | Patch dimensions for the heatmap.                                                                                                        |
-| percentile_scale  | `tuple[int, int]`      | Scale the heatmap values to percentile using `numpy.percentile()`.                                                                       |
-| percentile_score  | `bool`                 | Use percentile score for scaling the heatmap values using `scipy.stats.percentileofscore()`.                                             |
-| save_dir          | `path`                 | Directory to save the heatmap images. Will be saved at `{exp_base_dir}/{exp_name}/{fold-*}/{save_dir}/`.                                 |
-| source_dir        | `path`                 | Path to the directory containing the slides. Used to get predictions for the heatmap.                                                    |
-| source_dir_annot  | `path`                 | Path to the directory containing annotations corresponding to slides in `source_dir`. Set to null to use slides themselves for heatmaps. |
-| use_plt           | `bool`                 | Use matplotlib to generate the heatmap images. If false, heatmaps will match original slide dimensions.                                  |
+<table data-full-width="true"><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody><tr><td>alpha</td><td><code>float</code></td><td>Heatmap transparency while overlaying on the slide. Should be between 0 and 1.</td></tr><tr><td>blur</td><td><code>tuple[int, int]</code></td><td>Gaussian blur kernel size for the heatmap.</td></tr><tr><td>cmap</td><td><code>str</code></td><td>Colormap for the heatmap. Refer to matplotlib colormaps.</td></tr><tr><td>downsample_factor</td><td><code>int</code></td><td>Downsample slides resolution by this factor (when <code>source_dir</code> is provided).</td></tr><tr><td>downsample_size</td><td><code>tuple[int, int]</code></td><td>Downsample slides to this size (when <code>source_dir</code> is provided).</td></tr><tr><td>file_extension</td><td><code>str</code></td><td>File extension for the heatmap images to be saved.</td></tr><tr><td>invert_preds</td><td><code>bool</code></td><td>Whether to invert the predictions before making the heatmaps. Default is true.</td></tr><tr><td>overlap</td><td><code>float</code></td><td>Overlap factor for the heatmap patches. Should be between 0 and 1.</td></tr><tr><td>patch_dims</td><td><code>tuple[int, int, int]</code></td><td>Patch dimensions for the heatmap.</td></tr><tr><td>percentile_scale</td><td><code>tuple[int, int]</code></td><td>Scale the heatmap values to percentile using <code>numpy.percentile()</code>.</td></tr><tr><td>percentile_score</td><td><code>bool</code></td><td>Use percentile score for scaling the heatmap values using <code>scipy.stats.percentileofscore()</code>.</td></tr><tr><td>save_dir</td><td><code>path</code></td><td>Directory to save the heatmap images. Will be saved at <code>{exp_base_dir}/{exp_name}/{fold-*}/{save_dir}/</code>.</td></tr><tr><td>source_dir</td><td><code>path</code></td><td>Path to the directory containing the slides. Used to get predictions for the heatmap.</td></tr><tr><td>source_dir_annot</td><td><code>path</code></td><td>Path to the directory containing annotations corresponding to slides in <code>source_dir</code>. Set to null to use slides themselves for heatmaps.</td></tr><tr><td>use_plt</td><td><code>bool</code></td><td>Use matplotlib to generate the heatmap images. If false, heatmaps will match original slide dimensions.</td></tr></tbody></table>
 
 ## model
 
-### _select
+### \_select
 
-| Parameter  | Type  | Description                                                                                              |
-| ---------- | ----- | -------------------------------------------------------------------------------------------------------- |
-| classifier | `str` | Model to use for training and inference. Options: {CLAM_SB, EfficientNetB0, MobileNet, ResNet50, VGG16}. |
+<table data-full-width="true"><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody><tr><td>classifier</td><td><code>str</code></td><td>Model to use for training and inference. Options: {CLAM_SB, EfficientNetB0, MobileNet, ResNet50, VGG16}.</td></tr></tbody></table>
 
-### model-CLAM_SB
+### model-CLAM\_SB
 
-| Parameter     | Type   | Description         |
-| ------------- | ------ | ------------------- |
-| k_sample      | `null` |                     |
-| dropout       | `null` |                     |
-| learning_rate | `null` |                     |
-| loss_weights  | `dict` | Keys: bag, instance |
-| patience      | `null` |                     |
-| run_eagerly   | `null` |                     |
+<table data-full-width="true"><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody><tr><td>k_sample</td><td><code>null</code></td><td></td></tr><tr><td>dropout</td><td><code>null</code></td><td></td></tr><tr><td>learning_rate</td><td><code>null</code></td><td></td></tr><tr><td>loss_weights</td><td><code>dict</code></td><td>Keys: bag, instance</td></tr><tr><td>patience</td><td><code>null</code></td><td></td></tr><tr><td>run_eagerly</td><td><code>null</code></td><td></td></tr></tbody></table>
 
 ### model-EfficientNetB0, model-MobileNet, model-ResNet50, model-VGG16
 
-| Parameter        | Type   | Description |
-| ---------------- | ------ | ----------- |
-| freeze_ratio     | `null` |             |
-| learning_rate    | `null` |             |
-| patience         | `null` |             |
-| start_from_epoch | `null` |             |
+<table data-full-width="true"><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody><tr><td>freeze_ratio</td><td><code>null</code></td><td></td></tr><tr><td>learning_rate</td><td><code>null</code></td><td></td></tr><tr><td>patience</td><td><code>null</code></td><td></td></tr><tr><td>start_from_epoch</td><td><code>null</code></td><td></td></tr></tbody></table>
 
 ## trainer
 
-| Parameter         | Type                   | Description                                                                                        |
-| ----------------- | ---------------------- | -------------------------------------------------------------------------------------------------- |
-| batch_size        | `int`                  | Batch size for training.                                                                           |
-| data_dir          | `path`                 | Path to the directory containing the dataset. Should likely be `dataset/{data_dir_name}/`.         |
-| evaluate_only     | `bool`                 | Evaluate the model on the test set only. Useful for evaluating a trained model.                    |
-| exp_base_dir      | `path`                 | Base directory containing all the experiment folders. Usually `experiments/`.                      |
-| exp_name          | `str`                  | Current experiment name. Will create a directory in `exp_base_dir` (`{exp_base_dir}/{exp_name}/`). |
-| features_dir      | `path`                 | Path to the directory containing the features, particularly for MIL datasets.                      |
-| folds             | `list[int]`            | List of folds to be considered. Zero-indexed.                                                      |
-| max_epochs        | `int`                  | Maximum number of epochs to train the model.                                                       |
-| overwrite_preds   | `bool`                 | Overwrite predictions if already present in `{exp_base_dir}/{exp_name}/{fold-*}/preds.csv`.        |
-| patch_dims        | `tuple[int, int, int]` | Patch dimensions of the dataset.                                                                   |
-| predictions_file  | `string`               | Filename of the predictions CSV file, without the extension.                                       |
-| save_weights_only | `bool`                 | Save only the model's weights during checkpointing. Useful for subclassed models in `tf.keras`.    |
-| subset_size       | `int`                  | Subset size of the dataset to use for training. Use `null` to use the entire dataset.              |
-| use_augment       | `bool`                 | Whether to use augmented dataset for training (`dataset/{data_dir_name}/fold-*/{train}/`).         |
+<table data-full-width="true"><thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead><tbody><tr><td>batch_size</td><td><code>int</code></td><td>Batch size for training.</td></tr><tr><td>data_dir</td><td><code>path</code></td><td>Path to the directory containing the dataset. Should likely be <code>dataset/{data_dir_name}/</code>.</td></tr><tr><td>evaluate_only</td><td><code>bool</code></td><td>Evaluate the model on the test set only. Useful for evaluating a trained model.</td></tr><tr><td>exp_base_dir</td><td><code>path</code></td><td>Base directory containing all the experiment folders. Usually <code>experiments/</code>.</td></tr><tr><td>exp_name</td><td><code>str</code></td><td>Current experiment name. Will create a directory in <code>exp_base_dir</code> (<code>{exp_base_dir}/{exp_name}/</code>).</td></tr><tr><td>features_dir</td><td><code>path</code></td><td>Path to the directory containing the features, particularly for MIL datasets.</td></tr><tr><td>folds</td><td><code>list[int]</code></td><td>List of folds to be considered. Zero-indexed.</td></tr><tr><td>max_epochs</td><td><code>int</code></td><td>Maximum number of epochs to train the model.</td></tr><tr><td>overwrite_preds</td><td><code>bool</code></td><td>Overwrite predictions if already present in <code>{exp_base_dir}/{exp_name}/{fold-*}/preds.csv</code>.</td></tr><tr><td>patch_dims</td><td><code>tuple[int, int, int]</code></td><td>Patch dimensions of the dataset.</td></tr><tr><td>predictions_file</td><td><code>string</code></td><td>Filename of the predictions CSV file, without the extension.</td></tr><tr><td>save_weights_only</td><td><code>bool</code></td><td>Save only the model's weights during checkpointing. Useful for subclassed models in <code>tf.keras</code>.</td></tr><tr><td>subset_size</td><td><code>int</code></td><td>Subset size of the dataset to use for training. Use <code>null</code> to use the entire dataset.</td></tr><tr><td>use_augment</td><td><code>bool</code></td><td>Whether to use augmented dataset for training (<code>dataset/{data_dir_name}/fold-*/{train}/</code>).</td></tr></tbody></table>
