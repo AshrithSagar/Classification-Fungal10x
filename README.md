@@ -3,6 +3,8 @@
 ![GitHub](https://img.shields.io/github/license/AshrithSagar/Classification-Fungal10x)
 ![GitHub repo size](https://img.shields.io/github/repo-size/AshrithSagar/Classification-Fungal10x)
 [![CodeFactor](https://www.codefactor.io/repository/github/AshrithSagar/Classification-Fungal10x/badge)](https://www.codefactor.io/repository/github/AshrithSagar/Classification-Fungal10x)
+[![GitBook](https://img.shields.io/badge/GitBook-Classification%20Fungal10x-tan)](https://ashrithsagar.gitbook.io/classification-fungal10x)
+[![GitBook](https://img.shields.io/badge/GitBook-clfx%20fungal-tan)](https://ashrithsagar.gitbook.io/clfx-fungal)
 
 Fungal classification | Multiple Instance Learning
 
